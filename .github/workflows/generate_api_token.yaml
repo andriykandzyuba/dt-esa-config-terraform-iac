@@ -1,4 +1,4 @@
-name: Generate API Token
+name: "Generate API Token"
 
 on:
   workflow_dispatch:
@@ -12,9 +12,7 @@ on:
           - stage
           - prod
         default: dev
-      sha:
-        description: 'Image Tag'
-        required: true
+
 env:
   DYNATRACE_ENV_URL: "${{ envs.DYNATRACE_ENV_URL }}"
   DYNATRACE_API_TOKEN: "${{ secrets.DYNATRACE_API_TOKEN }}"
