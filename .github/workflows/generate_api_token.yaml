@@ -21,7 +21,7 @@ env:
 jobs:
   dynatrace-api-token:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || (github.ref_name == 'main' && 'prod' || 'dev') }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
