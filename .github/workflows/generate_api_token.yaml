@@ -1,0 +1,50 @@
+name: Generate API Token
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+        default: dev
+      sha:
+        description: 'Image Tag'
+        required: true
+env:
+  DYNATRACE_ENV_URL: "${{ envs.DYNATRACE_ENV_URL }}"
+  DYNATRACE_API_TOKEN: "${{ secrets.DYNATRACE_API_TOKEN }}"
+  CONFIG_DIRECTORY: "./environments/${{ inputs.environment }}"
+
+jobs:
+  dynatrace-api-token:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Terraform Setup'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'latest'
+
+      - name: 'Terraform Init'
+        id: init
+        run: terraform init -input=false
+
+      - name: 'Terraform Validate'
+        id: validate
+        run: terraform validate -no-color
+
+      - name: 'Terraform Plan'
+        id: plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+

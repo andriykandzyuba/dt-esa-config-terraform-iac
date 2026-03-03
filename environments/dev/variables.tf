@@ -1,0 +1,10 @@
+variable "dt_esa_api_token_name" {
+  description = "Name of the Dynatrace API Token. The default value is set to 'Dynatrace API Token'."
+  type = string
+}
+
+variable "dt_esa_api_token_scope" {
+  description = "Dynatrace API Token scopes."
+  type = list(string)
+}
+
