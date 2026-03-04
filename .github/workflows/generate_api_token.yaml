@@ -68,10 +68,15 @@ jobs:
         id: validate
         run: terraform validate -no-color
 
+        # --------------------------------------------------------------
+        # Terraform Plan
+        # Runs for both "plan" and "apply" actions.
+        # Environment variables (vars.*) and secrets (secrets.*) are
+        # automatically scoped to the selected GitHub environment.
+        # --------------------------------------------------------------
+
       - name: Terraform Plan
         id: plan
         if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
-          terraform plan \
-            -var="environment=${{ github.event.inputs.environment }}" \
-            -out=tfplan
+          terraform plan -out=tfplan
