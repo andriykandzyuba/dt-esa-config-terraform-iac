@@ -68,15 +68,23 @@ jobs:
         id: validate
         run: terraform validate -no-color
 
-        # --------------------------------------------------------------
-        # Terraform Plan
-        # Runs for both "plan" and "apply" actions.
-        # Environment variables (vars.*) and secrets (secrets.*) are
-        # automatically scoped to the selected GitHub environment.
-        # --------------------------------------------------------------
-
-      - name: Terraform Plan
+      # --------------------------------------------------------------
+      # Terraform Plan
+      # Runs for both "plan" and "apply" actions.
+      # Environment variables (vars.*) and secrets (secrets.*) are
+      # automatically scoped to the selected GitHub environment.
+      # --------------------------------------------------------------
+      - name: 'Terraform Plan'
         id: plan
         if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
           terraform plan -out=tfplan
+
+      # Post plan output as a PR comment (optional but useful)
+      - name: 'Post Plan to Summary'
+        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
+        run: |
+          echo "## Terraform Plan — \`${{ github.event.inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
