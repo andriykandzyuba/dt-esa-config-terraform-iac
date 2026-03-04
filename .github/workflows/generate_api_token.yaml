@@ -32,6 +32,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 'latest'
+          working-directory: ${{ env.CONFIG_DIRECTORY }}
 
       - name: 'Terraform Init'
         id: init
