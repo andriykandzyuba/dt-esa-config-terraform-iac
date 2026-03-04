@@ -4,14 +4,28 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Select the deployment environment'
+        description: "Target environment to deploy"
         required: true
         type: choice
         options:
           - dev
-          - stage
+          - staging
           - prod
         default: dev
+      terraform_action:
+        description: "Terraform action to perform"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+        default: plan
+
+# Limit concurrent runs per environment to prevent state conflicts
+concurrency:
+  group: terraform-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
 
 env:
   DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
@@ -20,10 +34,21 @@ env:
 
 jobs:
   dynatrace-api-token:
+    name: Terraform ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || (github.ref_name == 'main' && 'prod' || 'dev') }}
+
+    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
+    # By setting the environment in the workflow, you can leverage these features.
+    environment: ${{ github.event.inputs.environment }}
+
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -31,19 +56,22 @@ jobs:
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 'latest'
-          working-directory: ${{ env.CONFIG_DIRECTORY }}
+          terraform_version: "~1.9"
 
       - name: 'Terraform Init'
         id: init
         run: terraform init -input=false
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
 
       - name: 'Terraform Validate'
         id: validate
         run: terraform validate -no-color
 
-      - name: 'Terraform Plan'
+      - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false
-        continue-on-error: true
-
+        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
+        run: |
+          terraform plan \
+            -var="environment=${{ github.event.inputs.environment }}" \
+            -out=tfplan
