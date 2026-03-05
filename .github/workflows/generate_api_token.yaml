@@ -1,31 +1,54 @@
-name: Generate API Token
+name: "Generate API Token"
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Select the deployment environment'
+        description: "Target environment to deploy"
         required: true
         type: choice
         options:
           - dev
-          - stage
+          - staging
           - prod
         default: dev
-      sha:
-        description: 'Image Tag'
+      terraform_action:
+        description: "Terraform action to perform"
         required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+        default: plan
+
+# Limit concurrent runs per environment to prevent state conflicts
+concurrency:
+  group: terraform-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
+
 env:
-  DYNATRACE_ENV_URL: "${{ envs.DYNATRACE_ENV_URL }}"
-  DYNATRACE_API_TOKEN: "${{ secrets.DYNATRACE_API_TOKEN }}"
+  DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+  DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
   CONFIG_DIRECTORY: "./environments/${{ inputs.environment }}"
 
 jobs:
   dynatrace-api-token:
+    name: Terraform ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+
+    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
+    # By setting the environment in the workflow, you can leverage these features.
+    environment: ${{ github.event.inputs.environment }}
+
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -33,18 +56,57 @@ jobs:
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 'latest'
+          terraform_version: "~1.9"
 
       - name: 'Terraform Init'
         id: init
         run: terraform init -input=false
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
 
       - name: 'Terraform Validate'
         id: validate
         run: terraform validate -no-color
 
+      # --------------------------------------------------------------
+      # Terraform Plan
+      # Runs for both "plan" and "apply" actions.
+      # Environment variables (vars.*) and secrets (secrets.*) are
+      # automatically scoped to the selected GitHub environment.
+      # --------------------------------------------------------------
       - name: 'Terraform Plan'
         id: plan
-        run: terraform plan -no-color -input=false
-        continue-on-error: true
+        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
+        run: |
+          terraform plan -out=tfplan
 
+      # Post plan output as a PR comment (optional but useful)
+      - name: 'Post Plan to Summary'
+        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
+        run: |
+          echo "## Terraform Plan — \`${{ github.event.inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      # --------------------------------------------------------------
+      # Terraform Apply
+      # Only runs when "apply" is selected AND plan succeeded.
+      # --------------------------------------------------------------
+      - name: Terraform Apply
+        id: apply
+        if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
+        run: terraform apply -auto-approve tfplan
+
+      # --------------------------------------------------------------
+      # Terraform Destroy
+      # Only runs when "destroy" is explicitly selected.
+      # --------------------------------------------------------------
+      - name: Terraform Destroy
+        id: destroy
+        if: github.event.inputs.terraform_action == 'destroy'
+        run: |
+          terraform plan -destroy \
+            -var="environment=${{ github.event.inputs.environment }}" \
+            -out=tfplan-destroy
+          terraform apply -auto-approve tfplan-destroy
