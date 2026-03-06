@@ -1,0 +1,1 @@
+# Provision the Dynatrace Configurations with Terrform Command
