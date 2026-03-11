@@ -72,34 +72,8 @@ jobs:
               "tenantId":       "${{ secrets.ARM_TENANT_ID }}"
             }
 
-      - name: 'Azure CLI Configuration'
-        run: az config set core.only_show_errors=True
-
-      - name: 'Check if Terraform state file exists'
-        id: check_state_file
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            # Try to get blob properties. If the blob is not found, the command will fail and set the step's outcome to failure.
-            echo "blob_exists=$(az storage blob exists \
-              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
-              --name ${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }} \
-              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
-              --auth-mode login \
-              --query exists)" >> $GITHUB_OUTPUT
-
-      - name: 'Debug State File Check'
-        run: |
-          echo "Is the blob file exist: ${{ steps.check_state_file.outputs.blob_exists }}"
-
-      - name: 'Terraform Setup'
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~1.9"
-
       - name: 'Terraform Init'
         id: init
-        if: steps.check_state_file.outputs.blob_exists == 'false'
         # -backend-config flags inject the Azure Blob Storage coordinates at
         # runtime so no values are hard-coded in .tf files. The state key is
         # namespaced per environment (e.g. dev/terraform.tfstate).
@@ -127,11 +101,6 @@ jobs:
         if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
           terraform plan -out=tfplan
-        #  terraform plan -out=tfplan \
-        #  -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-        #  -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-        #  -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-        #  -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
@@ -139,11 +108,7 @@ jobs:
         run: |
           echo "## Terraform Plan — \`${{ github.event.inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          terraform show -no-color tfplan \       
-          -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}" >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       # --------------------------------------------------------------
@@ -153,11 +118,7 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
-        run: terraform apply -auto-approve tfplan \
-          -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
+        run: terraform apply -auto-approve
 
       # --------------------------------------------------------------
       # Terraform Destroy
@@ -167,13 +128,5 @@ jobs:
         id: destroy
         if: github.event.inputs.terraform_action == 'destroy'
         run: |
-          terraform plan -destroy -out=tfplan-destroy \       
-          -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
-          terraform apply -auto-approve tfplan-destroy \       
-          -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
+          terraform plan -destroy -out=tfplan-destroy
+          terraform apply -auto-approve tfplan-destroy
