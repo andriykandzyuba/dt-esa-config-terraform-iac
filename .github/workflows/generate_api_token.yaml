@@ -113,11 +113,7 @@ jobs:
 
       - name: 'Terraform Validate'
         id: validate
-        run: terraform validate -no-color \           
-          -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-          -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
+        run: terraform validate -no-color
 
       # --------------------------------------------------------------
       # Terraform Plan
