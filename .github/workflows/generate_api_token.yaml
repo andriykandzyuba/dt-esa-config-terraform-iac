@@ -80,17 +80,16 @@ jobs:
         with:
           inlineScript: |
             # Try to get blob properties. If the blob is not found, the command will fail and set the step's outcome to failure.
-            blob_exists = $(az storage blob exists --container-name ${{ vars.TF_BACKEND_CONTAINER }} --name ${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }} --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} --auth-mode login --query exists)
-            echo "Blob exists: $blob_exists"
-            if $blob_exists; then
-              echo "::set-output name=exists::true"
-            else
-              echo "::set-output name=exists::false"
-            fi
+            echo "blob_exists=$(az storage blob exists \
+              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
+              --name ${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }} \
+              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
+              --auth-mode login \
+              --query exists)" >> $GITHUB_OUTPUT
 
       - name: 'Debug State File Check'
         run: |
-          echo "Is the blob file exist: ${{ steps.check_state_file.outputs.exists }}"
+          echo "Is the blob file exist: ${{ steps.check_state_file.outputs.blob_exists }}"
 
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
@@ -99,7 +98,7 @@ jobs:
 
       - name: 'Terraform Init'
         id: init
-        if: steps.check_state_file.outputs.exists == 'false'
+        if: steps.check_state_file.outputs.blob_exists == false
         # -backend-config flags inject the Azure Blob Storage coordinates at
         # runtime so no values are hard-coded in .tf files. The state key is
         # namespaced per environment (e.g. dev/terraform.tfstate).
