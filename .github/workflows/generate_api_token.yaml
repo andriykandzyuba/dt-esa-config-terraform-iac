@@ -80,7 +80,8 @@ jobs:
         with:
           inlineScript: |
             # Try to get blob properties. If the blob is not found, the command will fail and set the step's outcome to failure.
-            if az storage blob exists --container-name ${{ vars.TF_BACKEND_CONTAINER }} --name ${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }} --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} --auth-mode login --query exists; then
+            exists = $(az storage blob exists --container-name ${{ vars.TF_BACKEND_CONTAINER }} --name ${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }} --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} --auth-mode login --query exists)
+            if exists; then
               echo "::set-output name=exists::true"
             else
               echo "::set-output name=exists::false"
