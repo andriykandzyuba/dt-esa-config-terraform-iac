@@ -72,6 +72,11 @@ jobs:
               "tenantId":       "${{ secrets.ARM_TENANT_ID }}"
             }
 
+      - name: 'Terraform Setup'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+
       - name: 'Terraform Init'
         id: init
         # -backend-config flags inject the Azure Blob Storage coordinates at
