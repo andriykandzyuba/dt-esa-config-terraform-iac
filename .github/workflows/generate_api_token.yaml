@@ -98,7 +98,7 @@ jobs:
 
       - name: 'Terraform Init'
         id: init
-        if: steps.check_state_file.outputs.blob_exists == false
+        if: steps.check_state_file.outputs.blob_exists == 'false'
         # -backend-config flags inject the Azure Blob Storage coordinates at
         # runtime so no values are hard-coded in .tf files. The state key is
         # namespaced per environment (e.g. dev/terraform.tfstate).
