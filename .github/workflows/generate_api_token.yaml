@@ -71,6 +71,9 @@ jobs:
               "tenantId":       "${{ secrets.ARM_TENANT_ID }}"
             }
 
+      - name: 'Azure CLI Configuration'
+        run: az config set core.only_show_errors=True
+
       - name: 'Check if Terraform state file exists'
         id: check_state_file
         uses: azure/cli@v2
