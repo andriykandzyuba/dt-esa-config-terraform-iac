@@ -28,7 +28,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  extract-dynatrace-api-token:
+  extract_dynatrace_api_token:
     name: Terraform Security ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
     runs-on: ubuntu-latest
 
@@ -93,12 +93,12 @@ jobs:
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
           echo "Generated API Token: $GENETATED_API_TOKEN"
-          echo "GENETATED_API_TOKEN=${GENETATED_API_TOKEN}" >> $GITHUB_OUTPUT
+          echo "access_token=${GENETATED_API_TOKEN}" >> "$GITHUB_OUTPUT"
 
-  deploy-dynatrace-iac:
+  deploy_dynatrace_iac:
     name: Terraform IaC ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
     runs-on: ubuntu-latest
-    needs: extract-dynatrace-api-token
+    needs: extract_dynatrace_api_token
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
@@ -126,6 +126,7 @@ jobs:
 
       - name: 'Debug the token value'
         run: |
+          echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
           echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
 
       - name: 'Terraform Setup for IaC'
