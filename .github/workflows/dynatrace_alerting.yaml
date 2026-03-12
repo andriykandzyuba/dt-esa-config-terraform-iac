@@ -115,7 +115,7 @@ jobs:
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      DYNATRACE_API_TOKEN: ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}
+      DYNATRACE_API_TOKEN: ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}
 
     defaults:
       run:
@@ -124,8 +124,7 @@ jobs:
     steps:
       - name: 'Debug the token value'
         run: |
-          echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
-          echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
+          echo "The value from Job 1 is ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}"
 
       - name: 'Checkout repository'
         uses: actions/checkout@v4
