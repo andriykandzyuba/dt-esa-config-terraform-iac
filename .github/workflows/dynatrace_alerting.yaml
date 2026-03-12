@@ -88,7 +88,7 @@ jobs:
       # --------------------------------------------------------------
       - name: Terraform Extract Token
         id:  extract_token
-        if: github.event.inputs.terraform_action == 'extract' && steps.init.outcome == 'success'
+        if: steps.init.outcome == 'success'
         run: |
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
