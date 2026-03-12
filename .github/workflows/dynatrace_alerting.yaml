@@ -42,6 +42,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/security
+      TF_LOG: "DEBUG"
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -111,6 +112,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/iac
+      TF_LOG: "DEBUG"
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
