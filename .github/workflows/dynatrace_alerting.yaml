@@ -93,8 +93,7 @@ jobs:
         run: |
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
-          echo "Generated API Token: ::add-mask::$GENETATED_API_TOKEN"
-          echo "access_token=${GENETATED_API_TOKEN}" >> "$GITHUB_OUTPUT"
+          echo "access_token=${GENETATED_API_TOKEN}" >> $GITHUB_OUTPUT
 
   deploy_dynatrace_iac:
     name: Terraform IaC ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
