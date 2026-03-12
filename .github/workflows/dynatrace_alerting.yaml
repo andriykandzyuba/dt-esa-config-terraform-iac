@@ -54,7 +54,7 @@ jobs:
 
     outputs:
       # Map the job output name 'output1' to the step output 'test'
-      output1: ${{ steps.extract_token.outputs.access_token }}
+      myoutput: ${{ steps.extract_token.outputs.access_token }}
 
     steps:
       - name: 'Checkout repository'
@@ -114,7 +114,7 @@ jobs:
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      DYNATRACE_API_TOKEN: ${{ needs.extract-dynatrace-api-token.outputs.access_token }}
+      DYNATRACE_API_TOKEN: ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}
 
     defaults:
       run:
@@ -126,7 +126,7 @@ jobs:
 
       - name: 'Debug the token value'
         run: |
-          echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.access_token }}"
+          echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
 
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
