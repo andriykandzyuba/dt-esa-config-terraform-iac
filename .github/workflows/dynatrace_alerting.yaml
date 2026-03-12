@@ -42,7 +42,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/security
-      TF_LOG: "DEBUG"
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -94,7 +93,7 @@ jobs:
         run: |
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
-          echo "Generated API Token: $GENETATED_API_TOKEN"
+          echo "Generated API Token: ::add-mask::$GENETATED_API_TOKEN"
           echo "access_token=${GENETATED_API_TOKEN}" >> "$GITHUB_OUTPUT"
 
   deploy_dynatrace_iac:
@@ -112,12 +111,11 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/iac
-      TF_LOG: "DEBUG"
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      DYNATRACE_API_TOKEN: ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}
+
 
     defaults:
       run:
@@ -179,6 +177,8 @@ jobs:
         id: apply
         if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
         run: terraform apply -auto-approve
+        env:
+          DYNATRACE_API_TOKEN: ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}
 
       # --------------------------------------------------------------
       # Terraform Destroy
