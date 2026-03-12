@@ -22,6 +22,9 @@ on:
           - destroy
         default: plan
 
+env:
+  TF_BLOB_SECURITY_NAME: "security"
+
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
   group: terraform-${{ github.event.inputs.environment }}
@@ -41,7 +44,6 @@ jobs:
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_BLOB_SECURITY_NAME: "security"
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/${{ env.TF_BLOB_SECURITY_NAME }}
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
