@@ -122,10 +122,6 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
-      - name: 'Debug the token value'
-        run: |
-          echo "The value from Job 1 is ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}"
-
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
