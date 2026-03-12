@@ -51,3 +51,6 @@ terraform.rc
 
 # Local environment variable files
 *.env
+
+# Temp files created by terragrunt when running commands
+.temp
