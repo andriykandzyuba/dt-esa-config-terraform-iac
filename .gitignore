@@ -48,3 +48,6 @@ terraform.rc
 
 # Ingore Intellij project files
 .idea/
+
+# Local environment variable files
+*.env

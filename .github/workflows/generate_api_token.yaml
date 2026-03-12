@@ -44,6 +44,13 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}
+      # Azure Service Principal credentials — stored as secrets in each
+      # GitHub environment (dev / staging / prod).
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
     defaults:
       run:
@@ -53,6 +60,18 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
+      # Azure Login uses the ARM_* secrets from the selected GitHub environment.
+      - name: 'Azure Login'
+        uses: azure/login@v2
+        with:
+          allow-no-subscriptions: true
+          creds: |
+            {
+              "clientId":       "${{ secrets.ARM_CLIENT_ID }}",
+              "clientSecret":   "${{ secrets.ARM_CLIENT_SECRET }}",
+              "tenantId":       "${{ secrets.ARM_TENANT_ID }}"
+            }
+
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
         with:
@@ -60,7 +79,15 @@ jobs:
 
       - name: 'Terraform Init'
         id: init
-        run: terraform init -input=false
+        # -backend-config flags inject the Azure Blob Storage coordinates at
+        # runtime so no values are hard-coded in .tf files. The state key is
+        # namespaced per environment (e.g. dev/terraform.tfstate).
+        run: |
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
         env:
           TF_VAR_environment: ${{ github.event.inputs.environment }}
 
@@ -96,7 +123,7 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve
 
       # --------------------------------------------------------------
       # Terraform Destroy
@@ -106,7 +133,5 @@ jobs:
         id: destroy
         if: github.event.inputs.terraform_action == 'destroy'
         run: |
-          terraform plan -destroy \
-            -var="environment=${{ github.event.inputs.environment }}" \
-            -out=tfplan-destroy
+          terraform plan -destroy -out=tfplan-destroy
           terraform apply -auto-approve tfplan-destroy
