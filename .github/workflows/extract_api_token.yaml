@@ -86,5 +86,4 @@ jobs:
         run: |
           # Extract the API token value from Terraform output and set it as an output variable
           API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
-          echo "API_TOKEN=${API_TOKEN}" >> $GITHUB_ENV
-          echo "::set-output name=api_token::${API_TOKEN}"
+          echo "API_TOKEN=${API_TOKEN}" >> $GITHUB_OUTPUT
