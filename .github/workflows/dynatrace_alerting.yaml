@@ -122,13 +122,13 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
-
       - name: 'Debug the token value'
         run: |
           echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
           echo "The value from Job 1 is ${{ needs.extract-dynatrace-api-token.outputs.myoutput }}"
+
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
 
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
