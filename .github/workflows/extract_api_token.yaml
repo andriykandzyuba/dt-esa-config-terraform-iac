@@ -1,0 +1,90 @@
+name: "Extract API Token"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to deploy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: dev
+      terraform_action:
+        description: "Terraform action to perform"
+        required: true
+        type: choice
+        options:
+          - extract
+        default: extract
+
+# Limit concurrent runs per environment to prevent state conflicts
+concurrency:
+  group: terraform-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+  DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+  CONFIG_DIRECTORY: "./environments/${{ inputs.environment }}"
+
+jobs:
+  dynatrace-api-token:
+    name: Terraform ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
+    runs-on: ubuntu-latest
+
+    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
+    # By setting the environment in the workflow, you can leverage these features.
+    environment: ${{ github.event.inputs.environment }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}
+      # Azure Blob Storage credentials — stored as secrets in each
+      # GitHub environment (dev / staging / prod).
+      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Terraform Setup'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+
+      - name: 'Terraform Init'
+        id: init
+        # -backend-config flags inject the Azure Blob Storage coordinates at
+        # runtime so no values are hard-coded in .tf files. The state key is
+        # namespaced per environment (e.g. dev/terraform.tfstate).
+        run: |
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BACKEND_BLOB }}"
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
+
+      - name: 'Terraform Validate'
+        id: validate
+        run: terraform validate -no-color
+
+      # --------------------------------------------------------------
+      # Terraform Extract Token
+      # --------------------------------------------------------------
+      - name: Terraform Extract Token
+        id:  extract_token
+        if: github.event.inputs.terraform_action == 'extract' && steps.init.outcome == 'success'
+        run: |
+          # Extract the API token value from Terraform output and set it as an output variable
+          API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
+          echo "API_TOKEN=${API_TOKEN}" >> $GITHUB_ENV
+          echo "::set-output name=api_token::${API_TOKEN}"
