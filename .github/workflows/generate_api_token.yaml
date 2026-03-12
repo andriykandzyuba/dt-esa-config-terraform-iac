@@ -42,7 +42,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_BLOB_SECURITY_NAME: "security"
-      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/${{ TF_BLOB_SECURITY_NAME }}
+      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/${{ env.TF_BLOB_SECURITY_NAME }}
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -72,7 +72,7 @@ jobs:
             -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
             -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
             -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-            -backend-config="key=${{ github.event.inputs.environment }}/${{ vars.TF_BLOB_SECURITY_NAME }}.tfstate"
+            -backend-config="key=${{ github.event.inputs.environment }}/${{ env.TF_BLOB_SECURITY_NAME }}.tfstate"
         env:
           TF_VAR_environment: ${{ github.event.inputs.environment }}
 
