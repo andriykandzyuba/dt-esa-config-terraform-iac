@@ -81,6 +81,7 @@ jobs:
 
       - name: 'Terraform Validate'
         id: validate
+        if: steps.init.outcome == 'success'
         run: terraform validate -no-color
 
       # --------------------------------------------------------------
@@ -88,7 +89,7 @@ jobs:
       # --------------------------------------------------------------
       - name: Terraform Extract Token
         id:  extract_token
-        if: steps.init.outcome == 'success'
+        if: steps.validate.outcome == 'success'
         run: |
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq '.resources.[0].instances.[0].attributes.token')
