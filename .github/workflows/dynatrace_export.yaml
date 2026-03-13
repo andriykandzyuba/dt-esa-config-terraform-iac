@@ -20,6 +20,7 @@ on:
         type: choice
         options:
           - list-exclusions
+          - export
         default: list-exclusions
 
 # Limit concurrent runs per environment to prevent state conflicts
@@ -150,3 +151,10 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -list-exclusions
+
+      - name: 'Configuration Export'
+        id: export_configuration
+        if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'export'
+        run: |
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+            -export -ref -id
