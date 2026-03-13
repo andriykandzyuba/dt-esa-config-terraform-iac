@@ -149,4 +149,4 @@ jobs:
         if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'list-exclusions'
         run: |
           echo "Working directory: $TF_WORKING_DIR"
-          ls -las .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1
+          ls -las .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64
