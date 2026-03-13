@@ -146,7 +146,7 @@ jobs:
         run: terraform validate -no-color
 
       - name: 'Configuration Exclusions'
-        id: export_configuration
+        id: list_exclusions
         if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'list-exclusions'
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
