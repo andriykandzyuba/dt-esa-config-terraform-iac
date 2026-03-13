@@ -21,7 +21,6 @@ on:
           - plan
           - apply
           - destroy
-          - yyo96051
         default: plan
 
 # Limit concurrent runs per environment to prevent state conflicts
