@@ -11,6 +11,8 @@ on:
           - dev
           - staging
           - prod
+          - yyo96051
+          - val72867
         default: dev
       terraform_action:
         description: "Terraform action to perform"
