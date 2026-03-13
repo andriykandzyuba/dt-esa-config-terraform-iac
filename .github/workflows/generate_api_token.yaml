@@ -11,6 +11,7 @@ on:
           - dev
           - staging
           - prod
+          - yyo96051
         default: dev
       terraform_action:
         description: "Terraform action to perform"
@@ -20,6 +21,7 @@ on:
           - plan
           - apply
           - destroy
+          - yyo96051
         default: plan
 
 # Limit concurrent runs per environment to prevent state conflicts
