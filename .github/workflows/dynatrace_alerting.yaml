@@ -13,6 +13,7 @@ on:
           - prod
           - yyo96051
           - val72867
+          - ual
         default: dev
       terraform_action:
         description: "Terraform action to perform"
