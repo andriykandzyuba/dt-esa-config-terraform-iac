@@ -1,4 +1,4 @@
-name: "Dynatrace Alerting Configuration"
+name: "Dynatrace Deploy Configurations"
 
 on:
   workflow_dispatch:
