@@ -53,4 +53,4 @@ terraform.rc
 *.env
 
 # Temp files created by terragrunt when running commands
-.temp
+.export
