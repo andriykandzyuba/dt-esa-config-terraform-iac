@@ -15,7 +15,7 @@ on:
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: terraform-${{ github.event.inputs.environment }}
+  group: terraform-extract-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
