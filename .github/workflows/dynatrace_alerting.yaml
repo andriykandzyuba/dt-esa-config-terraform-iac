@@ -9,8 +9,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
-          - prod
           - yyo96051
           - val72867
           - ual
