@@ -1,4 +1,4 @@
-name: "Generate API Token"
+name: "Delete API Token"
 
 on:
   workflow_dispatch:
@@ -20,6 +20,7 @@ on:
         options:
           - plan
           - apply
+          - destroy
         default: plan
 
 # Limit concurrent runs per environment to prevent state conflicts
@@ -108,3 +109,14 @@ jobs:
         id: apply
         if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
         run: terraform apply -auto-approve
+
+      # --------------------------------------------------------------
+      # Terraform Destroy
+      # Only runs when "destroy" is explicitly selected.
+      # --------------------------------------------------------------
+      - name: Terraform Destroy
+        id: destroy
+        if: github.event.inputs.terraform_action == 'destroy'
+        run: |
+          terraform plan -destroy -out=tfplan-destroy
+          terraform apply -auto-approve tfplan-destroy
