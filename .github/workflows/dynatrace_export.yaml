@@ -13,16 +13,16 @@ on:
           - prod
           - yyo96051
           - val72867
+          - ual
         default: dev
       terraform_action:
         description: "Terraform action to perform"
         required: true
         type: choice
         options:
-          - plan
-          - apply
-          - destroy
-        default: plan
+          - list-exclusions
+          - export
+        default: list-exclusions
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
@@ -146,9 +146,16 @@ jobs:
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
 
-      - name: 'Terraform Tool Export Configuration'
-        id: export_configuration
-        if: steps.validate.outcome == 'success'
+      - name: 'Configuration Exclusions'
+        id: list_exclusions
+        if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'list-exclusions'
         run: |
-          echo "Working directory: $TF_WORKING_DIR"
-          ls -las $TF_WORKING_DIR/.terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+            -export -list-exclusions
+
+      - name: 'Configuration Export'
+        id: export_configuration
+        if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'export'
+        run: |
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+            -export -ref -id

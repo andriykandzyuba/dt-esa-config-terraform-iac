@@ -1,4 +1,4 @@
-name: "Dynatrace Alerting Configuration"
+name: "Dynatrace Deploy Configurations"
 
 on:
   workflow_dispatch:
@@ -13,6 +13,7 @@ on:
           - prod
           - yyo96051
           - val72867
+          - ual
         default: dev
       terraform_action:
         description: "Terraform action to perform"
@@ -117,6 +118,10 @@ jobs:
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ needs.extract_dynatrace_api_token.outputs.myoutput }}
+      # Dynatrace OAuth2 Client
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
 
     defaults:
       run:
