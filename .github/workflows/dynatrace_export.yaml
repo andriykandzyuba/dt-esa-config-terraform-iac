@@ -31,6 +31,7 @@ jobs:
   call_extract_dynatrace_api_token:
     name: "Call Extract API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
     uses: ./.github/workflows/extract_api_token.yaml
+    secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
 
