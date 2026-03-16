@@ -46,7 +46,6 @@ jobs:
 
     env:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
-      # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
       TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/export
@@ -55,8 +54,11 @@ jobs:
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ needs.call_extract_dynatrace_api_token.outputs.api_token }}
+      # Dynatrace OAuth2 Client
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
       # Dynatrace Terraform Provider CLI
-      DT_ACCOUNT_ID: ${{ github.event.inputs.environment }}
       DYNATRACE_TARGET_FOLDER: environments/${{ github.event.inputs.environment }}/export/data
 
     defaults:
