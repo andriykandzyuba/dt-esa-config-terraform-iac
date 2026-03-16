@@ -9,7 +9,9 @@ on:
         type: string
     outputs:
       # Map the workflow output name 'api_token' to the job output 'myoutput'
-      api_token: ${{ jobs.extract_dynatrace_api_token.outputs.myoutput }}
+      api_token:
+        description: "The extracted API token"
+        value: ${{ jobs.extract_dynatrace_api_token.outputs.myoutput }}
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:

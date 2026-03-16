@@ -53,7 +53,7 @@ jobs:
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      DYNATRACE_API_TOKEN: ${{ needs.call_extract_dynatrace_api_token.outputs.access_token }}
+      DYNATRACE_API_TOKEN: ${{ needs.call_extract_dynatrace_api_token.outputs.api_token }}
       # Dynatrace Terraform Provider CLI
       DT_ACCOUNT_ID: ${{ github.event.inputs.environment }}
       DYNATRACE_TARGET_FOLDER: environments/${{ github.event.inputs.environment }}/export/data
