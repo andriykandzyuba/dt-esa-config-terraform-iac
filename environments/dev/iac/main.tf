@@ -7,3 +7,8 @@ module "dynatrace_alerting" {
   # Path to your local module folder
   source = "./modules/dynatrace_alerting"
 }
+
+module "document" {
+  # Path to your local module folder
+  source = "./modules/document"
+}
