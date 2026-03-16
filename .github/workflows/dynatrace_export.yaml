@@ -76,11 +76,9 @@ jobs:
 
       - name: 'Debug Terraform Init'
         run: |
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo 'DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}' >> $GITHUB_STEP_SUMMARY
-          echo 'DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}' >> $GITHUB_STEP_SUMMARY
-          echo 'DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}' >> $GITHUB_STEP_SUMMARY         
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo 'DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}' 
+          echo 'DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}'
+          echo 'DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}'     
 
       - name: 'Terraform Init for Dynatrace Export'
         id: init
