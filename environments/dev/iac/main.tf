@@ -1,5 +1,9 @@
-# environments/dev/main.tf
-module "dynatrace_api_token" {
+module "dynatrace_document" {
   # Path to your local module folder
-  source = "../../../modules/dynatrace_alerting"
+  source = "./modules/dynatrace_document"
+}
+
+module "dynatrace_alerting" {
+  # Path to your local module folder
+  source = "./modules/dynatrace_alerting"
 }
