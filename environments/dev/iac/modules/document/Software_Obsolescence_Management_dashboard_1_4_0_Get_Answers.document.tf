@@ -947,7 +947,7 @@ resource "dynatrace_document" "Software_Obsolescence_Management_dashboard_1_4_0_
             },
             "tileTimeframeEnabled": true
           },
-          "title": "Technologies",
+          "title": "Supported Technologies",
           "type": "data",
           "visualization": "singleValue",
           "visualizationSettings": {
