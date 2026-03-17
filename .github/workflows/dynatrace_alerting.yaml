@@ -60,6 +60,8 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
+      # Enable OAUth2 authentication for Dynatrace Terraform Provider
+      DYNATRACE_HTTP_OAUTH_PREFERENCE: ${{ vars.DYNATRACE_HTTP_OAUTH_PREFERENCE }}
 
     defaults:
       run:
