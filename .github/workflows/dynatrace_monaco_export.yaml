@@ -65,4 +65,5 @@ jobs:
 
       - name: 'Dynatrace Monaco Download'
         run: |
-          monaco download --environment $DT_ACCOUNT_ID --output-folder $MONACO_TARGET_FOLDER/$DT_ACCOUNT_ID
+          ls -las 
+          monaco download --manifest ./manifest.yaml --environment $DT_ACCOUNT_ID --output-folder $MONACO_TARGET_FOLDER/$DT_ACCOUNT_ID
