@@ -63,6 +63,6 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      - name: 'Dynatrace Monaco Export'
+      - name: 'Dynatrace Monaco Download'
         run: |
-          monaco export --environment $DT_ACCOUNT_ID --output-folder $MONACO_TARGET_FOLDER/$DT_ACCOUNT_ID
+          monaco download --environment $DT_ACCOUNT_ID --output-folder $MONACO_TARGET_FOLDER/$DT_ACCOUNT_ID
