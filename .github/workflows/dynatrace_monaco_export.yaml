@@ -77,14 +77,14 @@ jobs:
           ls -las $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_environment }}
           
       - name: Set the build timestamp
-        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
         shell: bash
 
       - name: Install zip (if not pre-installed on runner)
         run: sudo apt-get install zip
 
       - name: Create the zip archive
-        run: zip -r "$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip" \
+        run: zip -r $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
           $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_environment }}
 
       - name: Upload zip to Azure Blob Storage
@@ -94,6 +94,6 @@ jobs:
             az storage blob upload \
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \ 
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
-              --file "$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip" \
-              --name "$MONACO_TARGET_FOLDER/MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip" \
+              --file $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
+              --name $MONACO_TARGET_FOLDER/MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
               --account-key $ARM_ACCESS_KEY
