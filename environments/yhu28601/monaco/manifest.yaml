@@ -9,7 +9,7 @@ environmentGroups:
     environments:
       - name: yhu28601
         url:
-          value: https://yhu28601.live.dynatrace.com
+          value: https://yhu28601.apps.dynatrace.com/
         auth:
           oAuth:
             clientId:
