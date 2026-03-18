@@ -1,0 +1,64 @@
+name: "Dynatrace Monaco Tool Export"
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: "Source Dynatrace environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - yyo96051
+          - val72867
+          - ual
+        default: dev
+      monaco_action:
+        description: "Monaco action to perform"
+        required: true
+        type: choice
+        options:
+          - export
+        default: export
+
+# Limit concurrent runs per environment to prevent state conflicts
+concurrency:
+  group: monaco-export-${{ github.event.inputs.source_environment }}
+  cancel-in-progress: false
+
+jobs:
+  dynatrace_export_configuration:
+    name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
+    runs-on: ubuntu-latest
+
+    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
+    # By setting the environment in the workflow, you can leverage these features.
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
+      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+      # Dynatrace OAuth2 Client
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
+      # Dynatrace Monaco Tool Export Target Folder
+      MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Install Dynatrace Monaco Tool'
+        run: |
+          curl -L https://github.com/Dynatrace/dynatrace-configuration-as-code/releases/latest/download/monaco-linux-amd64 -o monaco-linux-amd64
+          mv monaco-linux-amd64 monaco
+          chmod +x monaco
+          sudo mv monaco /usr/local/bin/
+          echo "$(monaco version)" >> $GITHUB_OUTPUT
