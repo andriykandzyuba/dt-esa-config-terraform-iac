@@ -73,13 +73,11 @@ jobs:
       # --------------------------------------------------------------
       - name: 'Terraform Plan'
         id: plan
-        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
           terraform plan -out=tfplan
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
-        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
           echo "## Terraform Plan — \`${{ inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -87,21 +85,12 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       # --------------------------------------------------------------
-      # Terraform Apply
-      # Only runs when "apply" is selected AND plan succeeded.
-      # --------------------------------------------------------------
-      - name: Terraform Apply
-        id: apply
-        if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
-        run: terraform apply -auto-approve
-
-      # --------------------------------------------------------------
       # Terraform Destroy
       # Only runs when "destroy" is explicitly selected.
       # --------------------------------------------------------------
       - name: Terraform Destroy
         id: destroy
-        if: github.event.inputs.terraform_action == 'destroy'
+        if: steps.plan.outcome == 'success'
         run: |
           terraform plan -destroy -out=tfplan-destroy
           terraform apply -auto-approve tfplan-destroy
