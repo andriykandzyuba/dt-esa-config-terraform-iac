@@ -8,11 +8,11 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - yhu28601
           - yyo96051
           - val72867
           - ual
-        default: dev
+        default: yhu28601
       monaco_action:
         description: "Monaco action to perform"
         required: true
@@ -66,4 +66,4 @@ jobs:
       - name: 'Dynatrace Monaco Download'
         run: |
           ls -las 
-          monaco download --manifest ./manifest.yaml --environment $DT_ACCOUNT_ID --output-folder $MONACO_TARGET_FOLDER/$DT_ACCOUNT_ID
+          monaco download --manifest ./manifest.yaml --environment ${{ github.event.inputs.source_environment }} --output-folder $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_environment }}
