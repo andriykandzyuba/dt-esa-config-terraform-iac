@@ -28,9 +28,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  call_generate_dynatrace_api_token:
+    name: "Call Generate API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    uses: ./.github/workflows/access_token/generate_api_token.yaml
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+
   call_extract_dynatrace_api_token:
     name: "Call Extract API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
-    uses: ./.github/workflows/extract_api_token.yaml
+    uses: ./.github/workflows/access_token/extract_api_token.yaml
+    needs: call_generate_dynatrace_api_token
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
@@ -99,3 +107,12 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
+
+  call_delete_dynatrace_api_token:
+    name: "Call Delete API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    uses: ./.github/workflows/access_token/delete_api_token.yaml
+    needs: dynatrace_export_configuration
+    if: always()
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
