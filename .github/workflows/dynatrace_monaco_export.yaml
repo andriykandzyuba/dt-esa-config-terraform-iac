@@ -45,7 +45,7 @@ jobs:
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
       # Dynatrace Monaco Tool Export Target Folder
-      MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.environment }}/monaco
+      MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
 
     defaults:
       run:
