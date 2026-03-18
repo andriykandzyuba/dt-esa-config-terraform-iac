@@ -1,48 +1,33 @@
 name: "Delete API Token"
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
         description: "Target environment to deploy"
         required: true
-        type: choice
-        options:
-          - dev
-          - yyo96051
-          - val72867
-          - ual
-        default: dev
-      terraform_action:
-        description: "Terraform action to perform"
-        required: true
-        type: choice
-        options:
-          - plan
-          - apply
-          - destroy
-        default: plan
+        type: string
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: terraform-${{ github.event.inputs.environment }}
+  group: delete-api-token-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   dynatrace-api-token:
-    name: Terraform ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
+    name: "Delete API Token for environment: [${{ inputs.environment }}]"
     runs-on: ubuntu-latest
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
 
     env:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/security
+      TF_WORKING_DIR: environments/${{ inputs.environment }}/security
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -74,7 +59,7 @@ jobs:
             -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
             -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
-          TF_VAR_environment: ${{ github.event.inputs.environment }}
+          TF_VAR_environment: ${{ inputs.environment }}
 
       - name: 'Terraform Validate'
         id: validate
@@ -88,27 +73,16 @@ jobs:
       # --------------------------------------------------------------
       - name: 'Terraform Plan'
         id: plan
-        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
           terraform plan -out=tfplan
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
-        if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         run: |
-          echo "## Terraform Plan — \`${{ github.event.inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## Terraform Plan — \`${{ inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
-      # --------------------------------------------------------------
-      # Terraform Apply
-      # Only runs when "apply" is selected AND plan succeeded.
-      # --------------------------------------------------------------
-      - name: Terraform Apply
-        id: apply
-        if: github.event.inputs.terraform_action == 'apply' && steps.plan.outcome == 'success'
-        run: terraform apply -auto-approve
 
       # --------------------------------------------------------------
       # Terraform Destroy
@@ -116,7 +90,7 @@ jobs:
       # --------------------------------------------------------------
       - name: Terraform Destroy
         id: destroy
-        if: github.event.inputs.terraform_action == 'destroy'
+        if: steps.plan.outcome == 'success'
         run: |
           terraform plan -destroy -out=tfplan-destroy
           terraform apply -auto-approve tfplan-destroy

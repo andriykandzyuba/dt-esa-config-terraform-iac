@@ -29,9 +29,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  call_generate_dynatrace_api_token:
+    name: "Call Generate API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    uses: ./.github/workflows/generate_api_token.yaml
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
+
   call_extract_dynatrace_api_token:
     name: "Call Extract API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
     uses: ./.github/workflows/extract_api_token.yaml
+    needs: call_generate_dynatrace_api_token
     secrets: inherit
     with:
       environment: ${{ github.event.inputs.environment }}
@@ -134,3 +142,12 @@ jobs:
         run: |
           terraform plan -destroy -out=tfplan-destroy
           terraform apply -auto-approve tfplan-destroy
+
+  call_delete_dynatrace_api_token:
+    name: "Call Delete API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    uses: ./.github/workflows/delete_api_token.yaml
+    needs: deploy_dynatrace_iac
+    if: always()
+    secrets: inherit
+    with:
+      environment: ${{ github.event.inputs.environment }}
