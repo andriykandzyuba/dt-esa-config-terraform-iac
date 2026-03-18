@@ -70,7 +70,8 @@ jobs:
         run: |
           ls -las 
           monaco download --manifest ./manifest.yaml \
-            --only-documents \
+            --only-buckets \
+            --only-segments \
             --environment ${{ github.event.inputs.source_environment }} \
             --output-folder $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_environment }}
           ls -las $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_environment }}
