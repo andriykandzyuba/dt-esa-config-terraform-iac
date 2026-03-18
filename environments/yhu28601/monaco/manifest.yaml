@@ -2,14 +2,14 @@ manifestVersion: 1.0
 
 projects:
   - name: saas
-    path: saas/${tenantId}
+    path: saas/yhu28601
 
 environmentGroups:
   - name: saas
     environments:
-      - name: ${tenantId}
+      - name: yhu28601
         url:
-          value: https://${tenantId}.live.dynatrace.com
+          value: https://yhu28601.live.dynatrace.com
         auth:
           oAuth:
             clientId:
