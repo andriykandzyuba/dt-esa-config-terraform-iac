@@ -84,7 +84,7 @@ jobs:
         run: sudo apt-get install zip
 
       - name: Create the zip archive
-        run: zip -r $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
+        run: zip $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
           ./generated/project_${{ github.event.inputs.source_environment }}
 
       - name: Upload zip to Azure Blob Storage
