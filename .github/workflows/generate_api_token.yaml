@@ -10,7 +10,7 @@ on:
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: terraform-${{ inputs.environment }}
+  group: generate-api-token-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
