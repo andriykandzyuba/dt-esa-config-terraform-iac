@@ -61,4 +61,4 @@ jobs:
           mv monaco-linux-amd64 monaco
           chmod +x monaco
           sudo mv monaco /usr/local/bin/
-          echo "$(monaco version)" >> $GITHUB_OUTPUT
+          monaco version
