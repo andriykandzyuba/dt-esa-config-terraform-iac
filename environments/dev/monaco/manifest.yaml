@@ -1,15 +1,15 @@
 manifestVersion: 1.0
 
 projects:
-  - name: ENV
-    path: ENV/latest
+  - name: saas
+    path: saas/${tenantId}
 
 environmentGroups:
-  - name: ENV
+  - name: saas
     environments:
-      - name: ENV
+      - name: ${tenantId}
         url:
-          value: DYNATRACE_ENV_URL
+          value: https://${tenantId}.live.dynatrace.com
         auth:
           oAuth:
             clientId:
