@@ -75,7 +75,7 @@ jobs:
             --only-buckets \
             --only-segments \
             --output-folder ./generated
-          ls -las ./generated/project_${{ github.event.inputs.source_environment }}
+          ls -las ./generated
           
       - name: Set the build timestamp
         run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
@@ -87,7 +87,7 @@ jobs:
       - name: Create the zip archive
         run: |
           zip $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
-            ./generated/project_${{ github.event.inputs.source_environment }}
+            ./generated
 
       - name: Upload zip to Azure Blob Storage
         uses: azure/cli@v2
