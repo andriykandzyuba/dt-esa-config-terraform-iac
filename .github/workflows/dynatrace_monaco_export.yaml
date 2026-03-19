@@ -68,13 +68,14 @@ jobs:
 
       - name: 'Dynatrace Monaco Configuration Download'
         run: |
-          ls -las 
+          ls -las .
           monaco download --url $DYNATRACE_ENV_URL \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             --only-buckets \
             --only-segments \
             --output-folder ./generated
+          ls -las ./generated
           
       - name: Set the build timestamp
         run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
