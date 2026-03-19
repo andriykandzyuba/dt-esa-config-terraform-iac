@@ -85,9 +85,11 @@ jobs:
 
       - name: Create the zip archive
         run: |
+          ls -las .
           ls -las ./generated/project_${{ github.event.inputs.source_environment }}
           zip $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
             ./generated/project_${{ github.event.inputs.source_environment }}
+          ls -las .
 
       - name: Upload zip to Azure Blob Storage
         uses: azure/cli@v2
