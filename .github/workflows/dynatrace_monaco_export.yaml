@@ -90,8 +90,9 @@ jobs:
 
       - name: Create the zip archive
         run: |
-          zip $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip \
-            ./generated
+          ls -las .
+          zip -r ./generated . i $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.zip
+          ls -las .
 
       - name: Upload zip to Azure Blob Storage
         uses: azure/cli@v2
