@@ -8,11 +8,11 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - yhu28601
           - yyo96051
           - val72867
           - ual
-        default: dev
+        default: yhu28601
       monaco_action:
         description: "Monaco action to perform"
         required: true
@@ -46,10 +46,13 @@ jobs:
       DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+      MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
+      # Azure Service Principal credentials — stored as secrets in each
+      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
     defaults:
       run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
     steps:
       - name: 'Checkout repository'
@@ -61,4 +64,39 @@ jobs:
           mv monaco-linux-amd64 monaco
           chmod +x monaco
           sudo mv monaco /usr/local/bin/
-          echo "$(monaco version)" >> $GITHUB_OUTPUT
+          monaco version
+
+      - name: 'Dynatrace Monaco Configuration Download'
+        run: |
+          monaco download --url $DYNATRACE_ENV_URL \
+            --oauth-client-id DT_CLIENT_ID \
+            --oauth-client-secret DT_CLIENT_SECRET \
+            --output-folder ./generated
+
+      - name: 'Dynatrace Monaco Account Download'
+        run: |
+          monaco account download \
+            --oauth-client-id DT_CLIENT_ID \
+            --oauth-client-secret DT_CLIENT_SECRET \
+            -u $DT_ACCOUNT_ID \
+            --output-folder ./generated
+
+      - name: Set the build timestamp
+        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Create Recursive Tarball
+        run: |
+          tar -czf $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
+
+      - name: Upload zip to Azure Blob Storage
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob upload \
+              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
+              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
+              --file $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
+              --name $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
+              --auth-mode key \
+              --account-key $ARM_ACCESS_KEY

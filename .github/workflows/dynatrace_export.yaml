@@ -8,11 +8,11 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - yhu28601
           - yyo96051
           - val72867
           - ual
-        default: dev
+        default: yhu28601
       terraform_action:
         description: "Terraform action to perform"
         required: true
