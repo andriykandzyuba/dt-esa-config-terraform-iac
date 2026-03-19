@@ -71,8 +71,6 @@ jobs:
           monaco download --url $DYNATRACE_ENV_URL \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
-            --only-buckets \
-            --only-segments \
             --output-folder ./generated
 
       - name: 'Dynatrace Monaco Account Download'
