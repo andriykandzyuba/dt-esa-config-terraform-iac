@@ -74,7 +74,6 @@ jobs:
             --oauth-client-secret DT_CLIENT_SECRET \
             --only-buckets \
             --only-segments \
-            --environment ${{ github.event.inputs.source_environment }} \
             --output-folder ./generated
           
       - name: Set the build timestamp
