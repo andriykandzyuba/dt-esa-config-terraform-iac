@@ -75,7 +75,7 @@ jobs:
             --only-buckets \
             --only-segments \
             --output-folder ./generated
-          ls -las ./generated
+          ls -las ./generated/project_${{ github.event.inputs.source_environment }}
           
       - name: Set the build timestamp
         run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
