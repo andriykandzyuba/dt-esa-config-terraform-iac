@@ -66,10 +66,12 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      - name: 'Dynatrace Monaco Download'
+      - name: 'Dynatrace Monaco Configuration Download'
         run: |
           ls -las 
-          monaco download --manifest ./manifest.yaml \
+          monaco download --url $DYNATRACE_ENV_URL \
+            --oauth-client-id DT_CLIENT_ID \
+            --oauth-client-secret DT_CLIENT_SECRET \
             --only-buckets \
             --only-segments \
             --environment ${{ github.event.inputs.source_environment }} \
@@ -91,7 +93,6 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            ls -las $MONACO_TARGET_FOLDER
             az storage blob upload \
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
