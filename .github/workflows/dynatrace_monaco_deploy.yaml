@@ -131,11 +131,11 @@ jobs:
       - name: 'Dynatrace Monaco Account Deploy (Dry-Run)'
         if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
         run: |
-          cat ./.generated/manifest.yaml
-          ls -las ./.generated
+          cd ./.generated
+          ls -las .
           monaco account deploy 
             --dry-run \
-            --manifest .generated/manifest.yaml \
+            --manifes manifest.yaml \
             --account $DT_ACCOUNT_ID \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
