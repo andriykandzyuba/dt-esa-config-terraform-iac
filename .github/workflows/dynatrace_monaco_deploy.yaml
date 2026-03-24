@@ -134,7 +134,7 @@ jobs:
         run: |
           monaco account deploy 
             --dry-run \
-            --manifest $MONACO_TARGET_FOLDER/.generated/manifest.yaml \
+            --manifest ./.generated/manifest.yaml \
             --account $DT_ACCOUNT_ID \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
@@ -144,7 +144,7 @@ jobs:
         run: |
           monaco deploy 
             --dry-run \
-            --manifest $MONACO_TARGET_FOLDER/.generated/manifest.yaml \
+            --manifest ./.generated/manifest.yaml \
             --environment ${{ github.event.inputs.target_environment }} \
             --project dt-migration-project \
             --oauth-client-id DT_CLIENT_ID \
