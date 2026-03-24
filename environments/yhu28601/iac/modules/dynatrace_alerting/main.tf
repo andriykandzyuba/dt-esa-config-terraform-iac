@@ -4,7 +4,7 @@ resource "dynatrace_alerting" "dt_esa_alerting" {
     rules {
         rule {
             include_mode     = "INCLUDE_ALL"
-            tags             = ["EnvironmentA:production", "Team:test"]
+            tags             = ["EnvironmentA:production", "Team:test", "Application:Demo"]
             delay_in_minutes = 0
             severity_level   = "AVAILABILITY"
         }
