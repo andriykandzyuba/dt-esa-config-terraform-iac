@@ -66,19 +66,19 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      - name: 'Dynatrace Monaco Configuration Download'
-        run: |
-          monaco download --url $DYNATRACE_ENV_URL \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
-            --output-folder ./generated
-
       - name: 'Dynatrace Monaco Account Download'
         run: |
           monaco account download \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             -u $DT_ACCOUNT_ID \
+            --output-folder ./generated
+
+      - name: 'Dynatrace Monaco Configuration Download'
+        run: |
+          monaco download --url $DYNATRACE_ENV_URL \
+            --oauth-client-id DT_CLIENT_ID \
+            --oauth-client-secret DT_CLIENT_SECRET \
             --output-folder ./generated
 
       - name: Set the build timestamp
