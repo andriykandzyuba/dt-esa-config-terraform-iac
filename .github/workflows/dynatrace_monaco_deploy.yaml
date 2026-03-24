@@ -80,13 +80,11 @@ jobs:
               --account-key $ARM_ACCESS_KEY
             ls -la $MONACO_TARGET_FOLDER
 
-      - name: 'List Downloaded Files'
-        run: |
-          pwd
-          ls -la .
-
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
+          pwd
+          mkdir -p ./.generated
+          ls -la .
           tar -czf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated .
           rm ./.generated/manifest.yaml
 
