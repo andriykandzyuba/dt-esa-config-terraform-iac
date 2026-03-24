@@ -140,4 +140,4 @@ jobs:
         run: |
           cd ./.generated
           ls -las ./project
-          monaco deploy manifest-projects.yaml --dry-run --project document-dashboard
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
