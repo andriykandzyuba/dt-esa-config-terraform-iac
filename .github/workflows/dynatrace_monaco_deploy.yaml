@@ -75,19 +75,26 @@ jobs:
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
               --name $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
-              --file $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
+              --file ./${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
 
       - name: 'List Downloaded Files'
         run: |
-          ls -la $MONACO_TARGET_FOLDER
+          ls -la .
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
-          tar -czf $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
-          rm $MONACO_TARGET_FOLDER/.generated/manifest.yaml
-          cat <<EOF > $MONACO_TARGET_FOLDER/.generated/manifest.yaml
+          tar -czf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated .
+          rm ./.generated/manifest.yaml
+
+      - name: 'List Extracted Files'
+        run: |
+          ls -la ./generated
+
+      - name: 'Generate Monaco Manifest File'
+        run: |
+          cat <<EOF > ./.generated/manifest.yaml
           manifestVersion: "1.0"
           projects:
             - name: accounts
@@ -119,8 +126,8 @@ jobs:
                   type: environment
                   name: DT_CLIENT_SECRET
           EOF
-          ls -la $MONACO_TARGET_FOLDER/.generated
-          cat $MONACO_TARGET_FOLDER/.generated/manifest.yaml
+          ls -la ./.generated
+          cat ./.generated/manifest.yaml
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
