@@ -75,13 +75,14 @@ jobs:
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
               --name $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
-              --file ./${{ github.event.inputs.source_export_file }}.tar.gz \
+              --file $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
-            ls -la .
+            ls -la $MONACO_TARGET_FOLDER
 
       - name: 'List Downloaded Files'
         run: |
+          pwd
           ls -la .
 
       - name: 'Unpack Dynatrace Configuration Archive'
