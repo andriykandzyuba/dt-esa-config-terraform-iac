@@ -40,3 +40,16 @@ resource "dynatrace_alerting" "dt_esa_alerting" {
         }
     }
 }
+
+resource "dynatrace_alerting" "demo_alerting" {
+    name = "demo_alerting"
+    management_zone = ""
+    rules {
+        rule {
+            include_mode     = "INCLUDE_ALL"
+            tags             = ["Application:Demo"]
+            delay_in_minutes = 0
+            severity_level   = "AVAILABILITY"
+        }
+    }
+}
