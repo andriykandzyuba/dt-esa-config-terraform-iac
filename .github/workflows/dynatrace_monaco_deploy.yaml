@@ -109,11 +109,12 @@ jobs:
           cat <<EOF > ./.generated/manifest-projects.yaml
           manifestVersion: "1.0"
           projects:
-            - name: project
+            - name: document-dashboard
+              path: projects/document-dashboard
           environmentGroups:
             - name: default
               environments:
-                - name: project
+                - name: document-dashboard
                   url:
                     value: $DYNATRACE_ENV_URL
                   auth:
