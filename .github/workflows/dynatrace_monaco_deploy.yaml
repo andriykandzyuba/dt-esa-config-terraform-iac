@@ -81,6 +81,7 @@ jobs:
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
+          mkdir -p ./.generated
           tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
 
       - name: 'Re-Generate Monaco Manifest File'
