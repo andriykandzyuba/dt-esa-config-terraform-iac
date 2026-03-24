@@ -138,8 +138,4 @@ jobs:
         if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
         run: |
           cd ./.generated
-          ls -las .
-          monaco deploy manifest-projects.yaml \
-            --dry-run \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET
+          monaco deploy manifest-projects.yaml --dry-run
