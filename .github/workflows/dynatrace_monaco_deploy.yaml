@@ -134,17 +134,6 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      #- name: 'Dynatrace Monaco Account Deploy (Dry-Run)'
-      #  if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
-      #  run: |
-      #    cd ./.generated
-      #    ls -las .
-      #    monaco account deploy
-      #      --dry-run \
-      #      --manifes manifest-accounts.yaml \
-      #      --oauth-client-id DT_CLIENT_ID \
-      #      --oauth-client-secret DT_CLIENT_SECRET
-
       - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
         if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
         run: |
