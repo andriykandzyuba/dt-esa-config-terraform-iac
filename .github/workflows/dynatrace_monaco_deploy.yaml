@@ -99,7 +99,7 @@ jobs:
                 - name: ${{ github.event.inputs.target_environment }}
                   url:
                     type: environment
-                    value: DYNATRACE_ENV_URL
+                    value: $DYNATRACE_ENV_URL
                   oAuth:
                     clientId:
                       type: environment
