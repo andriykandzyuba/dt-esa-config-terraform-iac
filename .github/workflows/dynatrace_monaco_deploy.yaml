@@ -84,29 +84,13 @@ jobs:
           mkdir -p ./.generated
           tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
 
-      - name: 'Re-Generate Monaco Manifest File'
+      - name: 'Re-Generate Monaco Accounts Manifest'
         run: |
-          rm ./.generated/manifest.yaml
-          cat <<EOF > ./.generated/manifest.yaml
+          cat <<EOF > ./.generated/manifest-accounts.yaml
           manifestVersion: "1.0"
           projects:
             - name: accounts
-            - name: dt-migration-project
-              path: project
-          environmentGroups:
-            - name: target
-              environments:
-                - name: ${{ github.event.inputs.target_environment }}
-                  url:
-                    type: environment
-                    value: $DYNATRACE_ENV_URL
-                  oAuth:
-                    clientId:
-                      type: environment
-                      name: DT_CLIENT_ID
-                    clientSecret:
-                      type: environment
-                      name: DT_CLIENT_SECRET
+          environmentGroups: []
           accounts:
             - name: account_$DT_ACCOUNT_ID
               accountUUID:
@@ -118,6 +102,28 @@ jobs:
                 clientSecret:
                   type: environment
                   name: DT_CLIENT_SECRET
+          EOF
+
+      - name: 'Re-Generate Monaco Projects Manifest'
+        run: |
+          cat <<EOF > ./.generated/manifest-projects.yaml
+          manifestVersion: "1.0"
+          projects:
+            - name: project
+          environmentGroups:
+            - name: default
+              environments:
+                - name: project
+                  url:
+                    value: $DYNATRACE_ENV_URL
+                  auth:
+                    oAuth:
+                      clientId:
+                        type: environment
+                        name: DT_CLIENT_ID
+                      clientSecret:
+                        type: environment
+                        name: DT_CLIENT_SECRET
           EOF
 
       - name: 'Install Dynatrace Monaco Tool'
@@ -135,18 +141,17 @@ jobs:
           ls -las .
           monaco account deploy 
             --dry-run \
-            --manifes manifest.yaml \
-            --account $DT_ACCOUNT_ID \
+            --manifes manifest-accounts.yaml \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
 
-      - name: 'Dynatrace Monaco Configuration Deploy (Dry-Run)'
+      - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
         if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
         run: |
+          cd ./.generated
+          ls -las .
           monaco deploy 
             --dry-run \
-            --manifest ./.generated/manifest.yaml \
-            --environment ${{ github.event.inputs.target_environment }} \
-            --project dt-migration-project \
+            --manifest manifest-projects.yaml \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
