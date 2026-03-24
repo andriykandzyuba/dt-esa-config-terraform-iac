@@ -52,7 +52,7 @@ jobs:
       # Dynatrace OAuth2 Client (Source)
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
+      DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
