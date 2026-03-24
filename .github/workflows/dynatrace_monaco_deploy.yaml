@@ -78,6 +78,7 @@ jobs:
               --file ./${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
+            ls -la .
 
       - name: 'List Downloaded Files'
         run: |
