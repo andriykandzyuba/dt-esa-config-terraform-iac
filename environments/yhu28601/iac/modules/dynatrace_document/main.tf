@@ -1,6 +1,6 @@
 resource "dynatrace_document" "this" {
   type = "dashboard"
-  name = "Example Dashboard (Provisioned with Terraform & GitHub Actions)"
+  name = "Example Dashboard (Provisioned with Terraform & GitHub Actions) V2"
   content = jsonencode(
     {
       "version" : 13,
