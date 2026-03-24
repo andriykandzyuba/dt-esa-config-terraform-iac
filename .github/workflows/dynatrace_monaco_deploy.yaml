@@ -79,6 +79,10 @@ jobs:
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
 
+      - name: 'List Downloaded Files'
+        run: |
+          ls -la $MONACO_TARGET_FOLDER
+
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
           tar -czf $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
