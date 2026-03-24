@@ -85,8 +85,7 @@ jobs:
           pwd
           mkdir -p ./.generated
           ls -la .
-          chmod +rw ./${{ github.event.inputs.source_export_file }}.tar.gz
-          tar -czf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated .
+          tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
           rm ./.generated/manifest.yaml
 
       - name: 'List Extracted Files'
