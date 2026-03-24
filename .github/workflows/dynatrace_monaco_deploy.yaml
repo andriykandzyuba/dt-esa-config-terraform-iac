@@ -139,7 +139,7 @@ jobs:
         run: |
           cd ./.generated
           ls -las .
-          monaco deploy 
+          monaco deploy \
             --dry-run \
             --manifest manifest-projects.yaml \
             --oauth-client-id DT_CLIENT_ID \
