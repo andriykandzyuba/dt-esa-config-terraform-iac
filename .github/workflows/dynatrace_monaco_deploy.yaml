@@ -108,9 +108,9 @@ jobs:
                       type: environment
                       name: DT_CLIENT_SECRET
           accounts:
-            - name: account_${DT_ACCOUNT_ID}
+            - name: account_$DT_ACCOUNT_ID
               accountUUID:
-                value: ${DT_ACCOUNT_ID}
+                value: $DT_ACCOUNT_ID
               oAuth:
                 clientId:
                   type: environment
