@@ -32,17 +32,17 @@ on:
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: monaco-export-${{ github.event.inputs.source_environment }}
+  group: monaco-export-${{ github.event.inputs.target_environment }}
   cancel-in-progress: false
 
 jobs:
   dynatrace_export_configuration:
-    name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
+    name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.target_environment }}]
     runs-on: ubuntu-latest
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
-    environment: ${{ github.event.inputs.source_environment }}
+    environment: ${{ github.event.inputs.target_environment }}
 
     env:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
