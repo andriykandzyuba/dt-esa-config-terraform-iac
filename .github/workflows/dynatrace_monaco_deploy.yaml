@@ -78,22 +78,14 @@ jobs:
               --file $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
-            ls -la $MONACO_TARGET_FOLDER
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
-          pwd
-          mkdir -p ./.generated
-          ls -la .
           tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
+
+      - name: 'Re-Generate Monaco Manifest File'
+        run: |
           rm ./.generated/manifest.yaml
-
-      - name: 'List Extracted Files'
-        run: |
-          ls -la ./generated
-
-      - name: 'Generate Monaco Manifest File'
-        run: |
           cat <<EOF > ./.generated/manifest.yaml
           manifestVersion: "1.0"
           projects:
@@ -126,7 +118,6 @@ jobs:
                   type: environment
                   name: DT_CLIENT_SECRET
           EOF
-          ls -la ./.generated
           cat ./.generated/manifest.yaml
 
       - name: 'Install Dynatrace Monaco Tool'
