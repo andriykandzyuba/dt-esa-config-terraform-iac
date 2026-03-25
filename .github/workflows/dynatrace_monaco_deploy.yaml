@@ -148,7 +148,7 @@ jobs:
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
         run: |
           cd ./.generated
-          monaco generate delete manifest-projects.yaml --project document-dashboard
+          monaco generate deletefile manifest-projects.yaml --project document-dashboard
           ls -las
 
 # monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
