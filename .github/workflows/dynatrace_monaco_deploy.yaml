@@ -27,6 +27,7 @@ on:
         type: choice
         options:
           - deploy
+          - delete
         default: deploy
 
 # Limit concurrent runs per environment to prevent state conflicts
@@ -102,6 +103,7 @@ jobs:
                   type: environment
                   name: DT_CLIENT_SECRET
           EOF
+          cat ./.generated/manifest-accounts.yaml
 
       - name: 'Re-Generate Monaco Projects Manifest'
         run: |
@@ -125,6 +127,7 @@ jobs:
                         type: environment
                         name: DT_CLIENT_SECRET
           EOF
+          cat ./.generated/manifest-projects.yaml
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
@@ -136,6 +139,13 @@ jobs:
 
       - name: 'Dynatrace Monaco Projects Deploy'
         if: ${{ github.event.inputs.monaco_action == 'deploy' }}
+        run: |
+          cd ./.generated
+          ls -las ./project
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
+
+      - name: 'Dynatrace Monaco Projects Delete'
+        if: ${{ github.event.inputs.monaco_action == 'delete' }}
         run: |
           cd ./.generated
           ls -las ./project
