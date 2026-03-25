@@ -26,9 +26,8 @@ on:
         required: true
         type: choice
         options:
-          - dry-run
-        #  - deploy
-        default: dry-run
+          - deploy
+        default: deploy
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
@@ -135,8 +134,8 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
-        if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
+      - name: 'Dynatrace Monaco Projects Deploy'
+        if: ${{ github.event.inputs.monaco_action == 'deploy' }}
         run: |
           cd ./.generated
           ls -las ./project
