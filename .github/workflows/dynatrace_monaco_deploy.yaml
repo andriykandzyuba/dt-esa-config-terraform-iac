@@ -149,6 +149,6 @@ jobs:
         run: |
           cd ./.generated
           monaco generate deletefile manifest-projects.yaml --project document-dashboard
-          ls -las
+          cat delete.yaml
 
 # monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
