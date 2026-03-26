@@ -131,11 +131,11 @@ jobs:
 
       - name: 'Exclude Default Dynatrace Dashboards from Deployment'
         run: |
-          pwd
           cp ../../../scripts/monaco/update_config.sh ./.generated/
           chmod +x ./.generated/update_config.sh
-          ./.generated/update_config.sh
-          cat ./.generated/project/document-dashboard/config.yaml
+          cd ./.generated 
+          ./update_config.sh
+          cat project/document-dashboard/config.yaml
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
