@@ -131,7 +131,7 @@ jobs:
 
       - name: 'Exclude Default Dynatrace Dashboards from Deployment'
         run: |
-          ls -las .
+          pwd
           cp scripts/monaco/update_config.sh ./.generated/
           chmod +x ./.generated/update_config.sh
           ./.generated/update_config.sh
