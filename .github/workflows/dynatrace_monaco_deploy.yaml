@@ -26,6 +26,7 @@ on:
         required: true
         type: choice
         options:
+          - dry-run
           - deploy
           - delete
         default: deploy
@@ -144,12 +145,19 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
+      - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
+        if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
+        run: |
+          cd ./.generated
+          ls -las ./project
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project project
+
       - name: 'Dynatrace Monaco Projects Deploy'
         if: ${{ github.event.inputs.monaco_action == 'deploy' }}
         run: |
           cd ./.generated
           ls -las ./project
-          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project project
+          monaco deploy manifest-projects.yaml --continue-on-error --project project
 
       - name: 'Dynatrace Monaco Projects Delete'
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
