@@ -47,7 +47,6 @@ jobs:
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
-      MONACO_FEAT_FAST_DEPENDENCY_RESOLVER: "true"
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
