@@ -110,12 +110,11 @@ jobs:
           cat <<EOF > ./.generated/manifest-projects.yaml
           manifestVersion: "1.0"
           projects:
-            - name: document-dashboard
-              path: project/document-dashboard
+            - name: project
           environmentGroups:
             - name: default
               environments:
-                - name: document-dashboard
+                - name: project
                   url:
                     value: $DYNATRACE_ENV_URL
                   auth:
@@ -150,12 +149,12 @@ jobs:
         run: |
           cd ./.generated
           ls -las ./project
-          monaco deploy manifest-projects.yaml --continue-on-error --project document-dashboard
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project project
 
       - name: 'Dynatrace Monaco Projects Delete'
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
         run: |
           cd ./.generated
-          monaco generate deletefile manifest-projects.yaml --project document-dashboard
+          monaco generate deletefile manifest-projects.yaml --project project
           cat delete.yaml
           monaco delete --manifest manifest-projects.yaml --file delete.yaml
