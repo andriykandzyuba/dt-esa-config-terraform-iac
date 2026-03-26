@@ -142,7 +142,7 @@ jobs:
         run: |
           cd ./.generated
           ls -las ./project
-          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
+          monaco deploy manifest-projects.yaml --continue-on-error --project document-dashboard
 
       - name: 'Dynatrace Monaco Projects Delete'
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
