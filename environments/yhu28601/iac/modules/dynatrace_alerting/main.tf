@@ -4,7 +4,7 @@ resource "dynatrace_alerting" "dt_esa_alerting" {
     rules {
         rule {
             include_mode     = "INCLUDE_ALL"
-            tags             = ["EnvironmentA:production", "Team:test"]
+            tags             = ["EnvironmentA:production", "Team:test", "Application:Demo"]
             delay_in_minutes = 0
             severity_level   = "AVAILABILITY"
         }
@@ -37,6 +37,19 @@ resource "dynatrace_alerting" "dt_esa_alerting" {
             tags             = ["EnvironmentF:production", "Team:test"]
             delay_in_minutes = 0
             severity_level   = "RESOURCE_CONTENTION"
+        }
+    }
+}
+
+resource "dynatrace_alerting" "demo_alerting" {
+    name = "demo_alerting"
+    management_zone = ""
+    rules {
+        rule {
+            include_mode     = "INCLUDE_ALL"
+            tags             = ["Application:Demo"]
+            delay_in_minutes = 0
+            severity_level   = "AVAILABILITY"
         }
     }
 }

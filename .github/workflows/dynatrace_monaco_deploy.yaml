@@ -26,23 +26,23 @@ on:
         required: true
         type: choice
         options:
-          - dry-run
-        #  - deploy
-        default: dry-run
+          - deploy
+          - delete
+        default: deploy
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: monaco-export-${{ github.event.inputs.source_environment }}
+  group: monaco-export-${{ github.event.inputs.target_environment }}
   cancel-in-progress: false
 
 jobs:
   dynatrace_export_configuration:
-    name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
+    name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.target_environment }}]
     runs-on: ubuntu-latest
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
-    environment: ${{ github.event.inputs.source_environment }}
+    environment: ${{ github.event.inputs.target_environment }}
 
     env:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
@@ -52,7 +52,7 @@ jobs:
       # Dynatrace OAuth2 Client (Source)
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      DT_ACCOUNT_ID: ${{ secrets.DT_ACCOUNT_ID }}
+      DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
@@ -81,32 +81,20 @@ jobs:
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
-          tar -czf $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
-          rm $MONACO_TARGET_FOLDER/.generated/manifest.yaml
-          cat <<EOF > $MONACO_TARGET_FOLDER/.generated/manifest.yaml
+          mkdir -p ./.generated
+          tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
+
+      - name: 'Re-Generate Monaco Accounts Manifest'
+        run: |
+          cat <<EOF > ./.generated/manifest-accounts.yaml
           manifestVersion: "1.0"
           projects:
             - name: accounts
-            - name: dt-migration-project
-              path: project
-          environmentGroups:
-            - name: target
-              environments:
-                - name: ${{ github.event.inputs.target_environment }}
-                  url:
-                    type: environment
-                    value: DYNATRACE_ENV_URL
-                  oAuth:
-                    clientId:
-                      type: environment
-                      name: DT_CLIENT_ID
-                    clientSecret:
-                      type: environment
-                      name: DT_CLIENT_SECRET
+          environmentGroups: []
           accounts:
-            - name: account_${DT_ACCOUNT_ID}
+            - name: account_$DT_ACCOUNT_ID
               accountUUID:
-                value: ${DT_ACCOUNT_ID}
+                value: $DT_ACCOUNT_ID
               oAuth:
                 clientId:
                   type: environment
@@ -115,8 +103,31 @@ jobs:
                   type: environment
                   name: DT_CLIENT_SECRET
           EOF
-          ls -la $MONACO_TARGET_FOLDER/.generated
-          cat $MONACO_TARGET_FOLDER/.generated/manifest.yaml
+          cat ./.generated/manifest-accounts.yaml
+
+      - name: 'Re-Generate Monaco Projects Manifest'
+        run: |
+          cat <<EOF > ./.generated/manifest-projects.yaml
+          manifestVersion: "1.0"
+          projects:
+            - name: document-dashboard
+              path: project/document-dashboard
+          environmentGroups:
+            - name: default
+              environments:
+                - name: document-dashboard
+                  url:
+                    value: $DYNATRACE_ENV_URL
+                  auth:
+                    oAuth:
+                      clientId:
+                        type: environment
+                        name: DT_CLIENT_ID
+                      clientSecret:
+                        type: environment
+                        name: DT_CLIENT_SECRET
+          EOF
+          cat ./.generated/manifest-projects.yaml
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
@@ -126,23 +137,17 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
-      - name: 'Dynatrace Monaco Account Deploy (Dry-Run)'
-        if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
+      - name: 'Dynatrace Monaco Projects Deploy'
+        if: ${{ github.event.inputs.monaco_action == 'deploy' }}
         run: |
-          monaco account deploy 
-            --dry-run \
-            --manifest $MONACO_TARGET_FOLDER/.generated/manifest.yaml \
-            --account $DT_ACCOUNT_ID \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
+          cd ./.generated
+          ls -las ./project
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
 
-      - name: 'Dynatrace Monaco Configuration Deploy (Dry-Run)'
-        if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
+      - name: 'Dynatrace Monaco Projects Delete'
+        if: ${{ github.event.inputs.monaco_action == 'delete' }}
         run: |
-          monaco deploy 
-            --dry-run \
-            --manifest $MONACO_TARGET_FOLDER/.generated/manifest.yaml \
-            --environment ${{ github.event.inputs.target_environment }} \
-            --project dt-migration-project \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
+          cd ./.generated
+          monaco generate deletefile manifest-projects.yaml --project document-dashboard
+          cat delete.yaml
+          monaco delete --manifest manifest-projects.yaml --file delete.yaml
