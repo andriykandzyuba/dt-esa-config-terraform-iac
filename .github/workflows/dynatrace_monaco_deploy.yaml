@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - yhu28601
+          - val72867
         default: yhu28601
       source_export_file:
         description: "Source Dynatrace Configuration Archive File"
