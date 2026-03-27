@@ -20,6 +20,7 @@ on:
         type: choice
         options:
           - nyw40909
+          - bkh87134
         default: nyw40909
       monaco_action:
         description: "Monaco action to perform"
