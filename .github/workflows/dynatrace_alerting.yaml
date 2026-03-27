@@ -1,4 +1,4 @@
-name: "Dynatrace Deploy Configurations"
+name: "Dynatrace Terraform Provider Deploy"
 
 on:
   workflow_dispatch:

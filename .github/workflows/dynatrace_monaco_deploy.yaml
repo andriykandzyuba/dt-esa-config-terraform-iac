@@ -26,6 +26,7 @@ on:
         required: true
         type: choice
         options:
+          - dry-run
           - deploy
           - delete
         default: deploy
@@ -110,12 +111,11 @@ jobs:
           cat <<EOF > ./.generated/manifest-projects.yaml
           manifestVersion: "1.0"
           projects:
-            - name: document-dashboard
-              path: project/document-dashboard
+            - name: project
           environmentGroups:
             - name: default
               environments:
-                - name: document-dashboard
+                - name: project
                   url:
                     value: $DYNATRACE_ENV_URL
                   auth:
@@ -129,6 +129,14 @@ jobs:
           EOF
           cat ./.generated/manifest-projects.yaml
 
+      - name: 'Exclude Default Dynatrace Dashboards from Deployment'
+        run: |
+          cp ../../../scripts/monaco/update_config.sh ./.generated/
+          chmod +x ./.generated/update_config.sh
+          cd ./.generated 
+          ./update_config.sh
+          cat project/document-dashboard/config.yaml
+
       - name: 'Install Dynatrace Monaco Tool'
         run: |
           curl -L https://github.com/Dynatrace/dynatrace-configuration-as-code/releases/latest/download/monaco-linux-amd64 -o monaco-linux-amd64
@@ -137,17 +145,24 @@ jobs:
           sudo mv monaco /usr/local/bin/
           monaco version
 
+      - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
+        if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
+        run: |
+          cd ./.generated
+          ls -las ./project
+          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project project
+
       - name: 'Dynatrace Monaco Projects Deploy'
         if: ${{ github.event.inputs.monaco_action == 'deploy' }}
         run: |
           cd ./.generated
           ls -las ./project
-          monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project document-dashboard
+          monaco deploy manifest-projects.yaml --continue-on-error --project project
 
       - name: 'Dynatrace Monaco Projects Delete'
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
         run: |
           cd ./.generated
-          monaco generate deletefile manifest-projects.yaml --project document-dashboard
+          monaco generate deletefile manifest-projects.yaml --project project
           cat delete.yaml
           monaco delete --manifest manifest-projects.yaml --file delete.yaml
