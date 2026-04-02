@@ -93,7 +93,6 @@ jobs:
               --file $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
-          working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
