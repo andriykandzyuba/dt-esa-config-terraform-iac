@@ -10,6 +10,11 @@ on:
         options:
           - yhu28601
           - val72867
+          - vtq72629
+          - avc65257
+          - jqa38275
+          - rwb66447
+          - yyo96051
         default: yhu28601
       source_export_file:
         description: "Source Dynatrace Configuration Archive File"
@@ -22,6 +27,12 @@ on:
         options:
           - nyw40909
           - bkh87134
+          - zpa13569
+          - bse40162
+          - jkf42365
+          - tqe98595
+          - sxd52035
+          - sby39331
         default: nyw40909
       monaco_action:
         description: "Monaco action to perform"
@@ -62,13 +73,14 @@ jobs:
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
-    defaults:
-      run:
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
+
+      - name: 'Set up working directory'
+        run: |
+          mkdir -p $MONACO_TARGET_FOLDER
+          ls -la $MONACO_TARGET_FOLDER
 
       - name: 'Download zip to Azure Blob Storage'
         uses: azure/cli@v2
@@ -81,11 +93,13 @@ jobs:
               --file $MONACO_TARGET_FOLDER/${{ github.event.inputs.source_export_file }}.tar.gz \
               --auth-mode key \
               --account-key $ARM_ACCESS_KEY
+          working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Unpack Dynatrace Configuration Archive'
         run: |
           mkdir -p ./.generated
           tar -xzvf ./${{ github.event.inputs.source_export_file }}.tar.gz -C ./.generated
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Re-Generate Monaco Accounts Manifest'
         run: |
@@ -107,6 +121,7 @@ jobs:
                   name: DT_CLIENT_SECRET
           EOF
           cat ./.generated/manifest-accounts.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Re-Generate Monaco Projects Manifest'
         run: |
@@ -130,6 +145,7 @@ jobs:
                         name: DT_CLIENT_SECRET
           EOF
           cat ./.generated/manifest-projects.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Exclude Default Dynatrace Dashboards from Deployment'
         run: |
@@ -138,6 +154,7 @@ jobs:
           cd ./.generated 
           ./update_config.sh
           cat project/document-dashboard/config.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
@@ -146,6 +163,7 @@ jobs:
           chmod +x monaco
           sudo mv monaco /usr/local/bin/
           monaco version
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Dynatrace Monaco Projects Deploy (Dry-Run)'
         if: ${{ github.event.inputs.monaco_action == 'dry-run' }}
@@ -153,6 +171,7 @@ jobs:
           cd ./.generated
           ls -las ./project
           monaco deploy manifest-projects.yaml --dry-run --continue-on-error --project project
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Dynatrace Monaco Projects Deploy'
         if: ${{ github.event.inputs.monaco_action == 'deploy' }}
@@ -160,6 +179,7 @@ jobs:
           cd ./.generated
           ls -las ./project
           monaco deploy manifest-projects.yaml --continue-on-error --project project
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Dynatrace Monaco Projects Delete'
         if: ${{ github.event.inputs.monaco_action == 'delete' }}
@@ -168,3 +188,4 @@ jobs:
           monaco generate deletefile manifest-projects.yaml --project project
           cat delete.yaml
           monaco delete --manifest manifest-projects.yaml --file delete.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
