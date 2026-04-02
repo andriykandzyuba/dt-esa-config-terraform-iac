@@ -9,9 +9,13 @@ on:
         type: choice
         options:
           - yhu28601
-          - yyo96051
-          - val72867
           - ual
+          - val72867
+          - vtq72629
+          - avc65257
+          - jqa38275
+          - rwb66447
+          - yyo96051
         default: yhu28601
       terraform_action:
         description: "Terraform action to perform"
@@ -43,10 +47,21 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment }}
 
+  setup_working_directory:
+    name: "Setup Working Directory for environment: [${{ github.event.inputs.environment }}]"
+    runs-on: ubuntu-latest
+    needs: call_extract_dynatrace_api_token
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Create Export Directory'
+        run: mkdir -p environments/${{ github.event.inputs.environment }}/export
+
   dynatrace_export_configuration:
     name: Terraform IaC ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
     runs-on: ubuntu-latest
-    needs: call_extract_dynatrace_api_token
+    needs: setup_working_directory
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
@@ -56,7 +71,7 @@ jobs:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/export
+      EXPORT_WORKING_DIR: environments/${{ github.event.inputs.environment }}/export
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -74,8 +89,8 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
+      #- name: 'Checkout repository'
+      #  uses: actions/checkout@v4
 
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
