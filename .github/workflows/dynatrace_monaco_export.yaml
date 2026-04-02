@@ -12,6 +12,7 @@ on:
           - yyo96051
           - val72867
           - ual
+          - hia75022
         default: yhu28601
       monaco_action:
         description: "Monaco action to perform"
