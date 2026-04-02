@@ -9,10 +9,14 @@ on:
         type: choice
         options:
           - yhu28601
-          - yyo96051
-          - val72867
           - ual
           - hia75022
+          - val72867
+          - vtq72629
+          - avc65257
+          - jqa38275
+          - rwb66447
+          - yyo96051
         default: yhu28601
       monaco_action:
         description: "Monaco action to perform"
@@ -58,6 +62,11 @@ jobs:
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
+
+      - name: 'Set up working directory'
+        run: |
+          mkdir -p $MONACO_TARGET_FOLDER
+          ls -la $MONACO_TARGET_FOLDER
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
