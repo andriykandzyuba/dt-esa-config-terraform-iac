@@ -1,0 +1,8 @@
+- Use external Github Repo as a backend for Terraform Export operations:
+- The user should be able to add the link the target github repository to the environment settings.
+- The user should be able to add the token to access the target github repository to the environment settings.
+- Create a new "Dynatrace Terraform Provider CLI to IaC" workflow, similar to `https://github.com/andriykandzyuba/dt-esa-config-terraform-iac/blob/main/.github/workflows/dynatrace_export.yaml` that allows to:
+- Clone the remote repository.
+- Create a new branch in it with the name `dt-terraform-<environment-name>-<timestamp>
+- Export the target Dynatrace environment with the Dynatrace Terraform Provider CLI.
+- Add new files and directories to the branch, commit and push it.
