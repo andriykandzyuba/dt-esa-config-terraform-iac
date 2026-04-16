@@ -39,12 +39,12 @@ jobs:
         with:
           name: my-dir-artifact
           path: ${{ inputs.target_folder }}/.generate/
-          include-hidden-files: true
 
       - name: 'Verify contents'
         run: |
-          ls -la ./generated/
-          cat ./generated/export.txt
+          echo "Target folder: ${{ inputs.target_folder }}"
+          ls -la .generated/
+          cat .generated/export.txt
         working-directory: ${{ inputs.target_folder }}
 
       - name: 'Create Recursive Tarball'
