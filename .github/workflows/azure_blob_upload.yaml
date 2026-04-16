@@ -49,7 +49,7 @@ jobs:
 
       - name: 'Create Recursive Tarball'
         run: |
-          tar -czf ${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz -C ./generated .
+          tar -czf ${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz -C /.generated .
         working-directory: ${{ inputs.target_folder }}
 
       - name: 'Upload zip to Azure Blob Storage'

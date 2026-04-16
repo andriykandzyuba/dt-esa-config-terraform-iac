@@ -53,7 +53,7 @@ jobs:
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
 
     outputs:
-      build_timestamp: ${{ env.BUILD_TIMESTAMP }}
+      build_timestamp: ${{ steps.build_timestamp.outputs.version }}
       target_folder: ${{ env.MONACO_TARGET_FOLDER }}
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
@@ -110,10 +110,11 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
-      - name: 'Share environment variables as outputs'
+      - name: 'Set the build timestamp'
+        id: build_timestamp
         shell: bash
         run: |
-          echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+          echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
 
   upload_to_azure:
     needs: dynatrace_export_configuration
