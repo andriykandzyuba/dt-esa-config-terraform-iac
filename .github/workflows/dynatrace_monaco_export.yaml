@@ -34,21 +34,6 @@ concurrency:
   group: monaco-export-${{ github.event.inputs.source_environment }}
   cancel-in-progress: false
 
-env:
-    # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
-    DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-    # Dynatrace OAuth2 Client
-    DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
-    DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-    DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-    # Dynatrace Monaco Tool Export Target Folder
-    MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
-    MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
-    # Azure Service Principal credentials — stored as secrets in each
-    ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
-
 jobs:
   dynatrace_export_configuration:
     name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
@@ -57,6 +42,15 @@ jobs:
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
     environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Dynatrace OAuth2 Client
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      # Dynatrace Monaco Tool Export Target Folder
+      MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
 
     outputs:
       build_timestamp: ${{ env.BUILD_TIMESTAMP }}
@@ -84,13 +78,13 @@ jobs:
           monaco account download \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
-            -u $DT_ACCOUNT_ID \
+            -u ${{ vars.DT_ACCOUNT_ID }} \
             --output-folder ./generated
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Dynatrace Monaco Configuration Download'
         run: |
-          monaco download --url $DYNATRACE_ENV_URL \
+          monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             --output-folder ./generated
