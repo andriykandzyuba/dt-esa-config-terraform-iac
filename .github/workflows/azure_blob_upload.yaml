@@ -38,7 +38,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: my-dir-artifact
-          path: ${{ inputs.target_folder }}/.generate/
+          path: ${{ inputs.target_folder }}/.generated/
 
       - name: 'Verify contents'
         run: |
