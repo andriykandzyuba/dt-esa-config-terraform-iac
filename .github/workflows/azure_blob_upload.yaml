@@ -1,0 +1,63 @@
+name: "Azure Blob Storage Upload"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      target_folder:
+        required: true
+        type: string
+      export_file_name:
+        required: true
+        type: string
+      build_timestamp:
+        required: true
+        type: string
+      tf_backend_storage_account:
+        required: true
+        type: string
+      tf_backend_container:
+        required: true
+        type: string
+      
+    secrets:
+      arm_access_key:
+        required: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Download generated files artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: monaco-generated-${{ inputs.environment }}
+          path: ${{ inputs.target_folder }}/generated
+
+      - name: Set the build timestamp
+        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Create Recursive Tarball
+        run: |
+          tar -czf ${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz -C ./generated .
+        working-directory: ${{ inputs.target_folder }}
+
+      - name: Upload zip to Azure Blob Storage
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob upload \
+              --account-name ${{ inputs.tf_backend_storage_account }} \
+              --container-name ${{ inputs.tf_backend_container }} \
+              --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz \
+              --name ${{ inputs.target_folder }}/${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz \
+              --auth-mode key \
+              --account-key ${{ secrets.arm_access_key }}
+

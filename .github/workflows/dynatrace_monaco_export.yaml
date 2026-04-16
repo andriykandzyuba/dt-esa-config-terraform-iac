@@ -34,6 +34,21 @@ concurrency:
   group: monaco-export-${{ github.event.inputs.source_environment }}
   cancel-in-progress: false
 
+env:
+    # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
+    DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+    # Dynatrace OAuth2 Client
+    DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+    DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+    DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
+    # Dynatrace Monaco Tool Export Target Folder
+    MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+    MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
+    # Azure Service Principal credentials — stored as secrets in each
+    ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+
 jobs:
   dynatrace_export_configuration:
     name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
@@ -43,24 +58,8 @@ jobs:
     # By setting the environment in the workflow, you can leverage these features.
     environment: ${{ github.event.inputs.source_environment }}
 
-    env:
-      # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
-      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      # Dynatrace OAuth2 Client
-      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
-      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-      # Dynatrace Monaco Tool Export Target Folder
-      MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
-      MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
-      # Azure Service Principal credentials — stored as secrets in each
-      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
-
-    #defaults:
-    #  run:
-    #    working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+    outputs:
+      build_timestamp: ${{ env.BUILD_TIMESTAMP }}
 
     steps:
       - name: 'Checkout repository'
@@ -97,23 +96,19 @@ jobs:
             --output-folder ./generated
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
-      - name: Set the build timestamp
-        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
+      - name: 'Set the build timestamp'
         shell: bash
+        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
 
-      - name: Create Recursive Tarball
-        run: |
-          tar -czf $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
-      - name: Upload zip to Azure Blob Storage
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az storage blob upload \
-              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
-              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
-              --file $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
-              --name $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
-              --auth-mode key \
-              --account-key $ARM_ACCESS_KEY
+  upload_to_azure:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/azure_blob_upload.yaml
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      target_folder: ${{ env.MONACO_TARGET_FOLDER }}
+      export_file_name: monaco-${{ github.event.inputs.source_environment }}
+      build_timestamp: ${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+      tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
+      tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
+    secrets:
+      arm_access_key: ${{ secrets.ARM_ACCESS_KEY }}
