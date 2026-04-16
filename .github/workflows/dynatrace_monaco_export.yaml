@@ -97,10 +97,10 @@ jobs:
       - name: 'Simulate Monaco Export'
         shell: bash
         run: |
-          mkdir -p ./generated
-          echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ./generated/export.txt
-          ls -las ./generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+          mkdir -p ${{ env.MONACO_TARGET_FOLDER }}./generated
+          echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}./generated/export.txt
+          ls -las ${{ env.MONACO_TARGET_FOLDER }}./generated
+        #working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
