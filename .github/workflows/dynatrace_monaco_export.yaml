@@ -106,7 +106,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: my-dir-artifact
-          path: ${{ env.MONACO_TARGET_FOLDER }}/.generated
+          path: ${{ env.MONACO_TARGET_FOLDER }}/.generated/**
+          include-hidden-files: true
           retention-days: 1
 
       - name: 'Share environment variables as outputs'
