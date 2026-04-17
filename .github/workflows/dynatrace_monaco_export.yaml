@@ -28,6 +28,14 @@ on:
         options:
           - export
         default: export
+      storage:
+        description: "Export storage target"
+        required: true
+        type: choice
+        options:
+          - azure-blob
+          - github-repo
+        default: azure-blob
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
@@ -126,6 +134,7 @@ jobs:
   upload_to_azure:
     needs: dynatrace_export_configuration
     uses: ./.github/workflows/azure_blob_upload.yaml
+    if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
