@@ -21,6 +21,9 @@ on:
       tf_backend_container:
         required: true
         type: string
+      dir_artifact_name:
+        required: true
+        type: string
       
     secrets:
       arm_access_key:
@@ -37,7 +40,7 @@ jobs:
       - name: 'Download the directory'
         uses: actions/download-artifact@v4
         with:
-          name: my-dir-artifact
+          name: ${{ inputs.dir_artifact_name }}
           path: ${{ inputs.target_folder }}/.generated/
 
       - name: 'Verify contents'

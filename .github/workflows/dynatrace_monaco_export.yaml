@@ -51,12 +51,14 @@ jobs:
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+      DIR_ARTIFACT_NAME: export-dir-artifact
 
     outputs:
       build_timestamp: ${{ steps.build_timestamp.outputs.version }}
       target_folder: ${{ env.MONACO_TARGET_FOLDER }}
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
+      dir_artifact_name:  ${{ steps.build_timestamp.outputs.dir_artifact_name }}
 
     steps:
       - name: 'Checkout repository'
@@ -100,12 +102,17 @@ jobs:
           mkdir -p ${{ env.MONACO_TARGET_FOLDER }}/.generated
           echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}/.generated/export.txt
           ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
-        #working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+
+      - name: 'Export dir artifact name'
+        id: build_timestamp
+        shell: bash
+        run: |
+          echo "dir_artifact_name=$(DIR_ARTIFACT_NAME)" >> $GITHUB_OUTPUT
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: my-dir-artifact
+          name: $(DIR_ARTIFACT_NAME)
           path: ${{ env.MONACO_TARGET_FOLDER }}/.generated/**
           include-hidden-files: true
           retention-days: 1
@@ -126,5 +133,6 @@ jobs:
       build_timestamp: ${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
       tf_backend_storage_account: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_storage_account }}
       tf_backend_container: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_container }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
     secrets:
       arm_access_key: ${{ secrets.ARM_ACCESS_KEY }}
