@@ -85,7 +85,7 @@ jobs:
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             -u ${{ vars.DT_ACCOUNT_ID }} \
-            --output-folder ./generated
+            --output-folder .generated
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Dynatrace Monaco Configuration Download'
@@ -93,7 +93,7 @@ jobs:
           monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
-            --output-folder ./generated
+            --output-folder .generated
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       #- name: 'Simulate Monaco Export'
