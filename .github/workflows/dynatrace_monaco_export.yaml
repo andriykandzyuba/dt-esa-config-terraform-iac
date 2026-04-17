@@ -58,7 +58,7 @@ jobs:
       target_folder: ${{ env.MONACO_TARGET_FOLDER }}
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
-      dir_artifact_name:  ${{ steps.build_timestamp.outputs.dir_artifact_name }}
+      dir_artifact_name:  ${{ steps.dir_artifact_name.outputs.dir_artifact_name }}
 
     steps:
       - name: 'Checkout repository'
