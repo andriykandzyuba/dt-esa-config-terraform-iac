@@ -112,7 +112,7 @@ jobs:
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: $(DIR_ARTIFACT_NAME)
+          name: ${{ env.DIR_ARTIFACT_NAME }}
           path: ${{ env.MONACO_TARGET_FOLDER }}/.generated/**
           include-hidden-files: true
           retention-days: 1
