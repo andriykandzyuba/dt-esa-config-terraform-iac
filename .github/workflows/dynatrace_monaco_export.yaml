@@ -104,7 +104,7 @@ jobs:
           ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
 
       - name: 'Export dir artifact name'
-        id: build_timestamp
+        id: dir_artifact_name
         shell: bash
         run: |
           echo "dir_artifact_name=$(DIR_ARTIFACT_NAME)" >> $GITHUB_OUTPUT
