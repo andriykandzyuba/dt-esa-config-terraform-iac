@@ -103,12 +103,6 @@ jobs:
           echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}/.generated/export.txt
           ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
 
-      - name: 'Export dir artifact name'
-        id: dir_artifact_name
-        shell: bash
-        run: |
-          echo "dir_artifact_name=$(DIR_ARTIFACT_NAME)" >> $GITHUB_OUTPUT
-
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -122,6 +116,12 @@ jobs:
         shell: bash
         run: |
           echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+
+      - name: 'Export dir artifact name'
+        id: dir_artifact_name
+        shell: bash
+        run: |
+          echo "dir_artifact_name=${{ env.DIR_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
 
   upload_to_azure:
     needs: dynatrace_export_configuration
