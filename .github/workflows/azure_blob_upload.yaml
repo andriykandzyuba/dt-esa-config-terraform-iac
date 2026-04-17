@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "Target folder: ${{ inputs.target_folder }}"
           ls -la .generated/
-          cat .generated/export.txt
+      #    cat .generated/export.txt
         working-directory: ${{ inputs.target_folder }}
 
       - name: 'Create Recursive Tarball'
