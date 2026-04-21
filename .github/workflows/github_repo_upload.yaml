@@ -30,19 +30,18 @@ jobs:
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
     steps:
-      #- name: 'Clone external repository'
-      #  env:
-      #    GH_TOKEN: ${{ secrets.gh_repo_token }}
-      #  run: |
-      #    git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git ${REPO_NAME}
-
       - name: 'Clone external repository'
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          repository: ${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}
-          token: ${{ secrets.gh_repo_token }}
-          path: ${{ inputs.gh_repo_name }}
-          ref: ${{ inputs.gh_branch_name }}
+        env:
+          GH_TOKEN: ${{ secrets.gh_repo_token }}
+        run: |
+            gh repo clone "${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}"
+            cd "${{ inputs.gh_repo_name }}"
+            gh auth setup-git
+            if git ls-remote --exit-code --heads origin "${{ inputs.gh_branch_name }}"; then
+            git checkout "${{ inputs.gh_branch_name }}"
+            else
+            git checkout -b "${{ inputs.gh_branch_name }}"
+            fi
 
       #- name: 'Checkout target branch'
       #  working-directory: ${{ env.REPO_NAME }}
