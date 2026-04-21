@@ -71,6 +71,8 @@ jobs:
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
       dir_artifact_name:  ${{ steps.dir_artifact_name.outputs.dir_artifact_name }}
+      gh_repo_owner: ${{ steps.external_github_repo_details.outputs.gh_repo_owner }}
+      gh_repo_name: ${{ steps.external_github_repo_details.outputs.gh_repo_name }}
 
     steps:
       - name: 'Checkout repository'
@@ -135,6 +137,13 @@ jobs:
         run: |
           echo "dir_artifact_name=${{ env.DIR_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
 
+      - name: 'Export external GitHub repository details'
+        id: external_github_repo_details
+        shell: bash
+        run: |
+          echo "gh_repo_owner=${{ env.GH_REPO_OWNER }}" >> $GITHUB_OUTPUT
+          echo "gh_repo_name=${{ env.GH_REPO_NAME }}" >> $GITHUB_OUTPUT
+
   upload_to_azure:
     needs: dynatrace_export_configuration
     uses: ./.github/workflows/azure_blob_upload.yaml
@@ -157,8 +166,8 @@ jobs:
     with:
       environment: ${{ github.event.inputs.source_environment }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
+      gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-      gh_repo_name: ${{ vars.GH_REPO_OWNER }}
-      gh_repo_owner: ${{ vars.GH_REPO_NAME }}
     secrets:
       gh_repo_token: ${{ secrets.GITHUB_TOKEN }}
