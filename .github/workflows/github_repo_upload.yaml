@@ -29,11 +29,11 @@ jobs:
       REPO_NAME: ${{ inputs.gh_repo_name }}
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
+      GH_TOKEN: ${{ secrets.gh_repo_token }}
     steps:
       - name: 'Clone external repository'
-        env:
-          GH_TOKEN: ${{ secrets.gh_repo_token }}
         run: |
+            ech "$GH_TOKEN"
             echo "$GH_TOKEN" | gh auth login --with-token
             gh repo clone "${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}"
             cd "${{ inputs.gh_repo_name }}"
