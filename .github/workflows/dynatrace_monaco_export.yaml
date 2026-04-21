@@ -69,7 +69,6 @@ jobs:
       dir_artifact_name:  ${{ steps.dir_artifact_name.outputs.dir_artifact_name }}
       gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
       gh_repo_name: ${{ vars.GH_REPO_NAME }}
-      gh_token: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: 'Checkout repository'
@@ -159,6 +158,7 @@ jobs:
   push_to_github:
     needs: dynatrace_export_configuration
     uses: ./.github/workflows/github_repo_upload.yaml
+    secrets: inherit
     if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
@@ -166,5 +166,3 @@ jobs:
       gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-    secrets:
-      gh_repo_token: ${{ needs.dynatrace_export_configuration.outputs.gh_token }}
