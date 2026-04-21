@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: 'Clone external repository'
         run: |
-            ech "$GH_TOKEN"
+            echo "$GH_TOKEN"
             echo "$GH_TOKEN" | gh auth login --with-token
             gh repo clone "${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}"
             cd "${{ inputs.gh_repo_name }}"
