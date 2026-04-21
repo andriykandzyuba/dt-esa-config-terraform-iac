@@ -29,7 +29,7 @@ jobs:
       REPO_NAME: ${{ inputs.gh_repo_name }}
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
-      GH_TOKEN: ${{ inputs.gh_token }}
+      GH_TOKEN: ${{ secrets.gh_token }}
 
     steps:
       - name: 'Debug Environment Variables'
