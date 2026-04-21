@@ -61,8 +61,8 @@ jobs:
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       DIR_ARTIFACT_NAME: export-dir-artifact
       # External Github Repository details for pushing the exported configuration as an artifact (if selected as storage target)
-      GH_REPO_OWNER: ${{ env.GH_REPO_OWNER }}
-      GH_REPO_NAME: ${{ env.GH_REPO_NAME }}
+      GH_REPO_OWNER: ${{ vars.GH_REPO_OWNER }}
+      GH_REPO_NAME: ${{ vars.GH_REPO_NAME }}
       GH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
