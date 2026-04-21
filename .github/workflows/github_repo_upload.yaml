@@ -32,32 +32,26 @@ jobs:
       GH_TOKEN: ${{ secrets.gh_token }}
 
     steps:
-      - name: 'Debug Environment Variables'
+      - name: 'Verify token passed through'
         run: |
-          echo "$GH_TOKEN" >> $GITHUB_OUTPUT
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_TOKEN is EMPTY — secret not passed from caller"
+            exit 1
+          fi
+          echo "GH_TOKEN length: ${#GH_TOKEN}"
 
       - name: 'Clone external repository'
         run: |
-          # GH_TOKEN is in env, so gh uses it automatically — no login needed
+          # GH_TOKEN is in env, so gh uses it automatically
           gh repo clone "${REPO_OWNER}/${REPO_NAME}"
           cd "${REPO_NAME}"
           gh auth setup-git
-          
+
           if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
             git checkout "${BRANCH_NAME}"
           else
             git checkout -b "${BRANCH_NAME}"
           fi
-
-      #- name: 'Checkout target branch'
-      #  working-directory: ${{ env.REPO_NAME }}
-      #  run: |
-      #    # Create branch if it doesn't exist on remote, otherwise check it out
-      #    if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
-      #      git checkout "${BRANCH_NAME}"
-      #    else
-      #      git checkout -b "${BRANCH_NAME}"
-      #    fi
 
       - name: 'Download artifact into repo folder'
         uses: actions/download-artifact@v4
@@ -67,8 +61,6 @@ jobs:
 
       - name: 'Commit and push changes'
         working-directory: ${{ env.REPO_NAME }}
-        env:
-          GH_TOKEN: ${{ secrets.gh_repo_token }}
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"

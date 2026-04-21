@@ -37,7 +37,6 @@ on:
           - github-repo
         default: azure-blob
 
-# Limit concurrent runs per environment to prevent state conflicts
 concurrency:
   group: monaco-export-${{ github.event.inputs.source_environment }}
   cancel-in-progress: false
@@ -46,18 +45,12 @@ jobs:
   dynatrace_export_configuration:
     name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
     runs-on: ubuntu-latest
-
-    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
-    # By setting the environment in the workflow, you can leverage these features.
     environment: ${{ github.event.inputs.source_environment }}
 
     env:
-      # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Dynatrace OAuth2 Client
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       DIR_ARTIFACT_NAME: export-dir-artifact
 
@@ -66,7 +59,7 @@ jobs:
       target_folder: ${{ env.MONACO_TARGET_FOLDER }}
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
-      dir_artifact_name:  ${{ steps.dir_artifact_name.outputs.dir_artifact_name }}
+      dir_artifact_name: ${{ env.DIR_ARTIFACT_NAME }}
       gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
       gh_repo_name: ${{ vars.GH_REPO_NAME }}
 
@@ -76,8 +69,8 @@ jobs:
 
       - name: 'Set up working directory'
         run: |
-          mkdir -p $MONACO_TARGET_FOLDER
-          ls -la $MONACO_TARGET_FOLDER
+          mkdir -p "$MONACO_TARGET_FOLDER"
+          ls -la "$MONACO_TARGET_FOLDER"
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
@@ -109,9 +102,10 @@ jobs:
       - name: 'Simulate Monaco Export'
         shell: bash
         run: |
-          mkdir -p ${{ env.MONACO_TARGET_FOLDER }}/.generated
-          echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}/.generated/export.txt
-          ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
+          mkdir -p "$MONACO_TARGET_FOLDER/.generated"
+          echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" \
+            > "$MONACO_TARGET_FOLDER/.generated/export.txt"
+          ls -las "$MONACO_TARGET_FOLDER/.generated"
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
@@ -124,21 +118,7 @@ jobs:
       - name: 'Set the build timestamp'
         id: build_timestamp
         shell: bash
-        run: |
-          echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
-
-      - name: 'Export dir artifact name'
-        id: dir_artifact_name
-        shell: bash
-        run: |
-          echo "dir_artifact_name=${{ env.DIR_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
-
-      - name: 'Export external GitHub repository details'
-        id: external_github_repo_details
-        shell: bash
-        run: |
-          echo "gh_repo_owner=${{ env.GH_REPO_OWNER }}" >> $GITHUB_OUTPUT
-          echo "gh_repo_name=${{ env.GH_REPO_NAME }}" >> $GITHUB_OUTPUT
+        run: echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
 
   upload_to_azure:
     needs: dynatrace_export_configuration
@@ -166,4 +146,7 @@ jobs:
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
     secrets:
-      gh_token: ${{ secrets.GH_TOKEN }}
+      # Make sure a secret named EXTERNAL_REPO_PAT exists at the repo or environment level.
+      # (Don't use the name GH_TOKEN — it collides with the gh CLI's env var convention and
+      #  GITHUB_TOKEN is the only auto-provided token, which cannot access external repos.)
+      gh_token: ${{ secrets.EXTERNAL_REPO_PAT }}
