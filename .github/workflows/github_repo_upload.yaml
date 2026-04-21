@@ -37,7 +37,7 @@ jobs:
       #    git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git ${REPO_NAME}
 
       - name: 'Clone external repository'
-        uses: actions/checkout@v5
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           repository: ${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}
           token: ${{ secrets.gh_repo_token }}
