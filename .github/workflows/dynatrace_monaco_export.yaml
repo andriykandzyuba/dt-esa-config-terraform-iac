@@ -60,10 +60,6 @@ jobs:
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       DIR_ARTIFACT_NAME: export-dir-artifact
-      # External Github Repository details for pushing the exported configuration as an artifact (if selected as storage target)
-      GH_REPO_OWNER: ${{ vars.GH_REPO_OWNER }}
-      GH_REPO_NAME: ${{ vars.GH_REPO_NAME }}
-      GH_REPO_TOKEN: ${{ secrets.GH_TOKEN }}
 
     outputs:
       build_timestamp: ${{ steps.build_timestamp.outputs.version }}
@@ -71,8 +67,9 @@ jobs:
       tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
       tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
       dir_artifact_name:  ${{ steps.dir_artifact_name.outputs.dir_artifact_name }}
-      gh_repo_owner: ${{ steps.external_github_repo_details.outputs.gh_repo_owner }}
-      gh_repo_name: ${{ steps.external_github_repo_details.outputs.gh_repo_name }}
+      gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
+      gh_repo_name: ${{ vars.GH_REPO_NAME }}
+      gh_token: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: 'Checkout repository'
@@ -170,4 +167,4 @@ jobs:
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
     secrets:
-      gh_repo_token: $GH_REPO_TOKEN
+      gh_repo_token: ${{ needs.dynatrace_export_configuration.outputs.gh_token }}
