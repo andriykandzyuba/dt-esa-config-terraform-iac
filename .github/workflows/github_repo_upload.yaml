@@ -30,21 +30,29 @@ jobs:
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
     steps:
-      - name: 'Clone external repository'
-        env:
-          GH_TOKEN: ${{ secrets.gh_repo_token }}
-        run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git ${REPO_NAME}
+      #- name: 'Clone external repository'
+      #  env:
+      #    GH_TOKEN: ${{ secrets.gh_repo_token }}
+      #  run: |
+      #    git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git ${REPO_NAME}
 
-      - name: 'Checkout target branch'
-        working-directory: ${{ env.REPO_NAME }}
-        run: |
-          # Create branch if it doesn't exist on remote, otherwise check it out
-          if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
-            git checkout "${BRANCH_NAME}"
-          else
-            git checkout -b "${BRANCH_NAME}"
-          fi
+      - name: 'Clone external repository'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}
+          token: ${{ secrets.gh_repo_token }}
+          path: ${{ inputs.gh_repo_name }}
+          ref: ${{ inputs.gh_branch_name }}
+
+      #- name: 'Checkout target branch'
+      #  working-directory: ${{ env.REPO_NAME }}
+      #  run: |
+      #    # Create branch if it doesn't exist on remote, otherwise check it out
+      #    if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
+      #      git checkout "${BRANCH_NAME}"
+      #    else
+      #      git checkout -b "${BRANCH_NAME}"
+      #    fi
 
       - name: 'Download artifact into repo folder'
         uses: actions/download-artifact@v4
