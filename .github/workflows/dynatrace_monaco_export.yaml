@@ -168,5 +168,4 @@ jobs:
       gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-    secrets:
       gh_repo_token: ${{ secrets.GH_TOKEN }}
