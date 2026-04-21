@@ -18,9 +18,9 @@ on:
       gh_repo_owner:
         required: true
         type: string
-    secrets:
-      gh_token:
-        required: true
+    #secrets:
+    #  gh_token:
+    #    required: true
 
 jobs:
   github_upload:
