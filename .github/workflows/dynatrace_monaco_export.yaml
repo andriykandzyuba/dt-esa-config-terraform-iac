@@ -60,6 +60,10 @@ jobs:
       # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
       DIR_ARTIFACT_NAME: export-dir-artifact
+      # External Github Repository details for pushing the exported configuration as an artifact (if selected as storage target)
+      GH_REPO_OWNER: ${{ env.GH_REPO_OWNER }}
+      GH_REPO_NAME: ${{ env.GH_REPO_NAME }}
+      GH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
       build_timestamp: ${{ steps.build_timestamp.outputs.version }}
@@ -87,29 +91,29 @@ jobs:
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       # Temporarily commented out to avoid hitting API rate limits during development.
-      - name: 'Dynatrace Monaco Account Download'
-        run: |
-          monaco account download \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
-            -u ${{ vars.DT_ACCOUNT_ID }} \
-            --output-folder .generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
-      - name: 'Dynatrace Monaco Configuration Download'
-        run: |
-          monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
-            --output-folder .generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
-      #- name: 'Simulate Monaco Export'
-      #  shell: bash
+      # - name: 'Dynatrace Monaco Account Download'
       #  run: |
-      #    mkdir -p ${{ env.MONACO_TARGET_FOLDER }}/.generated
-      #    echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}/.generated/export.txt
-      #    ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
+      #    monaco account download \
+      #      --oauth-client-id DT_CLIENT_ID \
+      #      --oauth-client-secret DT_CLIENT_SECRET \
+      #      -u ${{ vars.DT_ACCOUNT_ID }} \
+      #      --output-folder .generated
+      #  working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+
+      #- name: 'Dynatrace Monaco Configuration Download'
+      #  run: |
+      #    monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
+      #      --oauth-client-id DT_CLIENT_ID \
+      #      --oauth-client-secret DT_CLIENT_SECRET \
+      #      --output-folder .generated
+      #  working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+
+      - name: 'Simulate Monaco Export'
+        shell: bash
+        run: |
+          mkdir -p ${{ env.MONACO_TARGET_FOLDER }}/.generated
+          echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" > ${{ env.MONACO_TARGET_FOLDER }}/.generated/export.txt
+          ls -las ${{ env.MONACO_TARGET_FOLDER }}/.generated
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
@@ -145,3 +149,16 @@ jobs:
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
     secrets:
       arm_access_key: ${{ secrets.ARM_ACCESS_KEY }}
+
+  push_to_github:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/azure_blob_upload.yaml
+    if: ${{ github.event.inputs.storage == 'azure-blob' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+      gh_repo_name: ${{ env.GH_REPO_OWNER }}
+      gh_repo_owner: ${{ env.GH_REPO_NAME }}
+    secrets:
+      gh_repo_token: ${{ secrets.GITHUB_TOKEN }}

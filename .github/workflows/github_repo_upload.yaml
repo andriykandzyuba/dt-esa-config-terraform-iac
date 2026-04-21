@@ -1,0 +1,73 @@
+name: "GitHub Repository Upload"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      dir_artifact_name:
+        required: true
+        type: string
+      gh_branch_name:
+        required: true
+        type: string
+      gh_repo_name:
+        required: true
+        type: string
+      gh_repo_owner:
+        required: true
+        type: string
+    secrets:
+      gh_repo_token:
+        required: true
+
+jobs:
+  github_upload:
+    runs-on: ubuntu-latest
+    env:
+      REPO_NAME: ${{ inputs.gh_repo_name }}
+      REPO_OWNER: ${{ inputs.gh_repo_owner }}
+      BRANCH_NAME: ${{ inputs.gh_branch_name }}
+    steps:
+      - name: 'Clone external repository'
+        env:
+          GH_TOKEN: ${{ secrets.gh_repo_token }}
+        run: |
+          git clone \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git" \
+            "${REPO_NAME}"
+
+      - name: 'Checkout target branch'
+        working-directory: ${{ env.REPO_NAME }}
+        run: |
+          # Create branch if it doesn't exist on remote, otherwise check it out
+          if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
+            git checkout "${BRANCH_NAME}"
+          else
+            git checkout -b "${BRANCH_NAME}"
+          fi
+
+      - name: 'Download artifact into repo folder'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.dir_artifact_name }}
+          path: ${{ env.REPO_NAME }}/
+
+      - name: 'Commit and push changes'
+        working-directory: ${{ env.REPO_NAME }}
+        env:
+          GH_TOKEN: ${{ secrets.gh_repo_token }}
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Upload artifacts from ${{ inputs.environment }}"
+          git push origin "${BRANCH_NAME}"
