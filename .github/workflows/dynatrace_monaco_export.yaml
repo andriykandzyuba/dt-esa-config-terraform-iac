@@ -153,7 +153,7 @@ jobs:
   push_to_github:
     needs: dynatrace_export_configuration
     uses: ./.github/workflows/azure_blob_upload.yaml
-    if: ${{ github.event.inputs.storage == 'azure-blob' }}
+    if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
