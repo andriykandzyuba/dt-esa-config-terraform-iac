@@ -30,11 +30,15 @@ jobs:
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
       GH_TOKEN: ${{ secrets.gh_repo_token }}
+
     steps:
+      - name: 'Debug Environment Variables'
+        run: |
+          env | grep GH_TOKEN
+
       - name: 'Clone external repository'
         run: |
           # GH_TOKEN is in env, so gh uses it automatically — no login needed
-          env | grep GH_TOKEN
           gh repo clone "${REPO_OWNER}/${REPO_NAME}"
           cd "${REPO_NAME}"
           gh auth setup-git
