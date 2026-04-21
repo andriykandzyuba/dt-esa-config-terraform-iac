@@ -81,52 +81,12 @@ jobs:
           monaco version
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
-      # Temporarily commented out to avoid hitting API rate limits during development.
-      - name: 'Dynatrace Monaco Account Download'
-        run: |
-          monaco account download \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
-            -u ${{ vars.DT_ACCOUNT_ID }} \
-            --output-folder .generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
       - name: 'Dynatrace Monaco Configuration Download'
         run: |
           monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             --output-folder .generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
-      #- name: 'Simulate Monaco Export'
-      #  shell: bash
-      #  run: |
-      #    mkdir -p "$MONACO_TARGET_FOLDER/.generated"
-      #    echo "Simulating Monaco export for environment ${{ github.event.inputs.source_environment }}" \
-      #      > "$MONACO_TARGET_FOLDER/.generated/export.txt"
-      #    ls -las "$MONACO_TARGET_FOLDER/.generated"
-
-      - name: 'Re-Generate Monaco Accounts Manifest'
-        run: |
-          cat <<EOF > ./.generated/manifest-accounts.yaml
-          manifestVersion: "1.0"
-          projects:
-            - name: accounts
-          environmentGroups: []
-          accounts:
-            - name: account_$DT_ACCOUNT_ID
-              accountUUID:
-                value: $DT_ACCOUNT_ID
-              oAuth:
-                clientId:
-                  type: environment
-                  name: DT_CLIENT_ID
-                clientSecret:
-                  type: environment
-                  name: DT_CLIENT_SECRET
-          EOF
-          cat ./.generated/manifest-accounts.yaml
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
       - name: 'Re-Generate Monaco Projects Manifest'
