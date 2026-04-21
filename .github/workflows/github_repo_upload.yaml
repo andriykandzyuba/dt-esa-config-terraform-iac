@@ -18,6 +18,9 @@ on:
       gh_repo_owner:
         required: true
         type: string
+    secrets:
+      gh_token:
+        required: true
 
 jobs:
   github_upload:
@@ -26,12 +29,12 @@ jobs:
       REPO_NAME: ${{ inputs.gh_repo_name }}
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GH_TOKEN: ${{ inputs.gh_token }}
 
     steps:
       - name: 'Debug Environment Variables'
         run: |
-          env | grep GH_TOKEN
+          echo "$GH_TOKEN" >> $GITHUB_OUTPUT
 
       - name: 'Clone external repository'
         run: |
