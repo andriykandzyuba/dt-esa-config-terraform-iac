@@ -25,11 +25,14 @@ on:
 jobs:
   github_upload:
     runs-on: ubuntu-latest
+
+    environment: ${{ inputs.environment }}
+
     env:
       REPO_NAME: ${{ inputs.gh_repo_name }}
       REPO_OWNER: ${{ inputs.gh_repo_owner }}
       BRANCH_NAME: ${{ inputs.gh_branch_name }}
-      GH_TOKEN: ${{ secrets.gh_token }}
+      GH_TOKEN: ${{ secrets.EXTERNAL_REPO_PAT }}
 
     steps:
       - name: 'Verify token passed through'

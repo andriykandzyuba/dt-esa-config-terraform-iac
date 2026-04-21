@@ -145,8 +145,8 @@ jobs:
       gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-    secrets:
+    secrets: inherit
       # Make sure a secret named EXTERNAL_REPO_PAT exists at the repo or environment level.
       # (Don't use the name GH_TOKEN — it collides with the gh CLI's env var convention and
       #  GITHUB_TOKEN is the only auto-provided token, which cannot access external repos.)
-      gh_token: ${{ secrets.EXTERNAL_REPO_PAT }}
+      # gh_token: ${{ secrets.EXTERNAL_REPO_PAT }}
