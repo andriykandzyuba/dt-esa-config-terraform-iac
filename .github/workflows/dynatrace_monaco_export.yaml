@@ -158,7 +158,7 @@ jobs:
       environment: ${{ github.event.inputs.source_environment }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-      gh_repo_name: ${{ env.GH_REPO_OWNER }}
-      gh_repo_owner: ${{ env.GH_REPO_NAME }}
+      gh_repo_name: ${{ vars.GH_REPO_OWNER }}
+      gh_repo_owner: ${{ vars.GH_REPO_NAME }}
     secrets:
       gh_repo_token: ${{ secrets.GITHUB_TOKEN }}
