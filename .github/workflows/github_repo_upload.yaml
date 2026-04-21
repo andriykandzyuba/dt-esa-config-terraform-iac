@@ -34,10 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.gh_repo_token }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git
-        # git clone \
-        #  "https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git" \
-        #  "${REPO_NAME}"
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git ${REPO_NAME}
 
       - name: 'Checkout target branch'
         working-directory: ${{ env.REPO_NAME }}
