@@ -28,8 +28,15 @@ on:
         options:
           - export
         default: export
+      storage:
+        description: "Export storage target"
+        required: true
+        type: choice
+        options:
+          - azure-blob
+          - github-repo
+        default: azure-blob
 
-# Limit concurrent runs per environment to prevent state conflicts
 concurrency:
   group: monaco-export-${{ github.event.inputs.source_environment }}
   cancel-in-progress: false
@@ -38,29 +45,23 @@ jobs:
   dynatrace_export_configuration:
     name: Dynatrace Monaco ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.source_environment }}]
     runs-on: ubuntu-latest
-
-    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
-    # By setting the environment in the workflow, you can leverage these features.
     environment: ${{ github.event.inputs.source_environment }}
 
     env:
-      # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
-      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
-      # Dynatrace OAuth2 Client
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-      # Dynatrace Monaco Tool Export Target Folder
       MONACO_TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
-      MONACO_EXPORT_ZIP_FILE_NAME_PREFIX: monaco-${{ github.event.inputs.source_environment }}
-      # Azure Service Principal credentials — stored as secrets in each
-      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+      DIR_ARTIFACT_NAME: export-dir-artifact
 
-    #defaults:
-    #  run:
-    #    working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+    outputs:
+      build_timestamp: ${{ steps.build_timestamp.outputs.version }}
+      target_folder: ${{ env.MONACO_TARGET_FOLDER }}
+      tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
+      tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
+      dir_artifact_name: ${{ env.DIR_ARTIFACT_NAME }}
+      gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
+      gh_repo_name: ${{ vars.GH_REPO_NAME }}
 
     steps:
       - name: 'Checkout repository'
@@ -68,8 +69,8 @@ jobs:
 
       - name: 'Set up working directory'
         run: |
-          mkdir -p $MONACO_TARGET_FOLDER
-          ls -la $MONACO_TARGET_FOLDER
+          mkdir -p "$MONACO_TARGET_FOLDER"
+          ls -la "$MONACO_TARGET_FOLDER"
 
       - name: 'Install Dynatrace Monaco Tool'
         run: |
@@ -80,40 +81,73 @@ jobs:
           monaco version
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
-      - name: 'Dynatrace Monaco Account Download'
-        run: |
-          monaco account download \
-            --oauth-client-id DT_CLIENT_ID \
-            --oauth-client-secret DT_CLIENT_SECRET \
-            -u $DT_ACCOUNT_ID \
-            --output-folder ./generated
-        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
-
       - name: 'Dynatrace Monaco Configuration Download'
         run: |
-          monaco download --url $DYNATRACE_ENV_URL \
+          monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
-            --output-folder ./generated
+            --output-folder .generated
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
-      - name: Set the build timestamp
-        run: echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Create Recursive Tarball
+      - name: 'Re-Generate Monaco Projects Manifest'
         run: |
-          tar -czf $MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz -C ./generated .
+          cat <<EOF > ./.generated/manifest-projects.yaml
+          manifestVersion: "1.0"
+          projects:
+            - name: project
+          environmentGroups:
+            - name: default
+              environments:
+                - name: project
+                  url:
+                    value: $DYNATRACE_ENV_URL
+                  auth:
+                    oAuth:
+                      clientId:
+                        type: environment
+                        name: DT_CLIENT_ID
+                      clientSecret:
+                        type: environment
+                        name: DT_CLIENT_SECRET
+          EOF
+          cat ./.generated/manifest-projects.yaml
         working-directory: ${{ env.MONACO_TARGET_FOLDER }}
 
-      - name: Upload zip to Azure Blob Storage
-        uses: azure/cli@v2
+      - name: 'Upload directory as artifact'
+        uses: actions/upload-artifact@v4
         with:
-          inlineScript: |
-            az storage blob upload \
-              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
-              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
-              --file $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
-              --name $MONACO_TARGET_FOLDER/$MONACO_EXPORT_ZIP_FILE_NAME_PREFIX-${{ env.BUILD_TIMESTAMP }}.tar.gz \
-              --auth-mode key \
-              --account-key $ARM_ACCESS_KEY
+          name: ${{ env.DIR_ARTIFACT_NAME }}
+          path: ${{ env.MONACO_TARGET_FOLDER }}/.generated/**
+          include-hidden-files: true
+          retention-days: 1
+
+      - name: 'Set the build timestamp'
+        id: build_timestamp
+        shell: bash
+        run: echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+
+  upload_to_azure:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/azure_blob_upload.yaml
+    if: ${{ github.event.inputs.storage == 'azure-blob' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
+      export_file_name: monaco-${{ github.event.inputs.source_environment }}
+      build_timestamp: ${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+      tf_backend_storage_account: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_storage_account }}
+      tf_backend_container: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_container }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+    secrets: inherit
+
+  push_to_github:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/github_repo_upload.yaml
+    if: ${{ github.event.inputs.storage == 'github-repo' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
+      gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
+      gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+    secrets: inherit
