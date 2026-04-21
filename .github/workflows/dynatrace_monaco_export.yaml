@@ -107,6 +107,52 @@ jobs:
             > "$MONACO_TARGET_FOLDER/.generated/export.txt"
           ls -las "$MONACO_TARGET_FOLDER/.generated"
 
+      - name: 'Re-Generate Monaco Accounts Manifest'
+        run: |
+          cat <<EOF > ./.generated/manifest-accounts.yaml
+          manifestVersion: "1.0"
+          projects:
+            - name: accounts
+          environmentGroups: []
+          accounts:
+            - name: account_$DT_ACCOUNT_ID
+              accountUUID:
+                value: $DT_ACCOUNT_ID
+              oAuth:
+                clientId:
+                  type: environment
+                  name: DT_CLIENT_ID
+                clientSecret:
+                  type: environment
+                  name: DT_CLIENT_SECRET
+          EOF
+          cat ./.generated/manifest-accounts.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+
+      - name: 'Re-Generate Monaco Projects Manifest'
+        run: |
+          cat <<EOF > ./.generated/manifest-projects.yaml
+          manifestVersion: "1.0"
+          projects:
+            - name: project
+          environmentGroups:
+            - name: default
+              environments:
+                - name: project
+                  url:
+                    value: $DYNATRACE_ENV_URL
+                  auth:
+                    oAuth:
+                      clientId:
+                        type: environment
+                        name: DT_CLIENT_ID
+                      clientSecret:
+                        type: environment
+                        name: DT_CLIENT_SECRET
+          EOF
+          cat ./.generated/manifest-projects.yaml
+        working-directory: ${{ env.MONACO_TARGET_FOLDER }}
+
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
