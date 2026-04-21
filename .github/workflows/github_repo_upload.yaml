@@ -34,6 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.gh_repo_token }}
         run: |
+            echo "$GH_TOKEN" | gh auth login --with-token
             gh repo clone "${{ inputs.gh_repo_owner }}/${{ inputs.gh_repo_name }}"
             cd "${{ inputs.gh_repo_name }}"
             gh auth setup-git
