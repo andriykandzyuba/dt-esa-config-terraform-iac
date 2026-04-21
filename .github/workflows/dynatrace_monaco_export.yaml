@@ -63,6 +63,7 @@ jobs:
       # External Github Repository details for pushing the exported configuration as an artifact (if selected as storage target)
       GH_REPO_OWNER: ${{ vars.GH_REPO_OWNER }}
       GH_REPO_NAME: ${{ vars.GH_REPO_NAME }}
+      GH_REPO_TOKEN: ${{ secrets.GH_TOKEN }}
 
     outputs:
       build_timestamp: ${{ steps.build_timestamp.outputs.version }}
@@ -168,4 +169,5 @@ jobs:
       gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
       gh_branch_name: monaco-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
-      gh_repo_token: ${{ secrets.GH_TOKEN }}
+    secrets:
+      gh_repo_token: $GH_REPO_TOKEN
