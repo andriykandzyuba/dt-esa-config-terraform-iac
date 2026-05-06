@@ -55,6 +55,7 @@ jobs:
         run: |
           tar -czf "$RUNNER_TEMP/$ARCHIVE" -C . .
           mv "$RUNNER_TEMP/$ARCHIVE" "./$ARCHIVE".
+          ls -la .
         working-directory: ${{ inputs.target_folder }}
 
       - name: 'Upload zip to Azure Blob Storage'
