@@ -50,11 +50,11 @@ jobs:
 
       - name: 'Dynatrace Monaco Configuration Download'
         run: |
-          monaco download --url ${{ env.DYNATRACE_ENV_URL }} \
+          monaco download --url ${{ inputs.dynatrace_env_url }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
             --output-folder .
-        working-directory: ${{ env.TARGET_FOLDER }}
+        working-directory: ${{ inputs.target_folder }}
 
       - name: 'Re-Generate Monaco Projects Manifest'
         run: |
