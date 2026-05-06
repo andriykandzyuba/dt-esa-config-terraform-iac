@@ -1,0 +1,171 @@
+name: "Dynatrace Configuration Export"
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: "Source Dynatrace environment"
+        required: true
+        type: choice
+        options:
+          - yhu28601
+          - ual
+          - ualpre
+          - hia75022
+          - val72867
+          - vtq72629
+          - avc65257
+          - jqa38275
+          - rwb66447
+          - yyo96051
+          - zpa13569
+          - bwf66177
+        default: yhu28601
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - export
+        default: export
+      format:
+        description: "Export format"
+        required: true
+        type: choice
+        options:
+          - monaco
+          - terraform
+        default: monaco
+      storage:
+        description: "Export storage type"
+        required: true
+        type: choice
+        options:
+          - azure-blob
+          - github-repo
+        default: azure-blob
+
+concurrency:
+  group: export-${{ github.event.inputs.source_environment }}
+  cancel-in-progress: false
+
+jobs:
+  dynatrace_export_configuration:
+    name: Dynatrace ${{ github.event.inputs.format }} ${{ github.event.inputs.action }} [${{ github.event.inputs.source_environment }}]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.source_environment }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/${{ github.event.inputs.format }}
+      DIR_ARTIFACT_NAME: export-dir-artifact
+
+    outputs:
+      build_timestamp: ${{ steps.build_timestamp.outputs.version }}
+      target_folder: ${{ env.TARGET_FOLDER }}
+      tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
+      tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
+      dir_artifact_name: ${{ env.DIR_ARTIFACT_NAME }}
+      gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
+      gh_repo_name: ${{ vars.GH_REPO_NAME }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+#      - name: 'Set up working directory'
+#        run: |
+#          mkdir -p "$TARGET_FOLDER"
+#          ls -la "$TARGET_FOLDER"
+
+#      - name: 'Install Dynatrace Monaco Tool'
+#        run: |
+#          curl -L https://github.com/Dynatrace/dynatrace-configuration-as-code/releases/latest/download/monaco-linux-amd64 -o monaco-linux-amd64
+#          mv monaco-linux-amd64 monaco
+#          chmod +x monaco
+#          sudo mv monaco /usr/local/bin/
+#          monaco version
+#        working-directory: ${{ env.TARGET_FOLDER }}
+
+ #     - name: 'Dynatrace Monaco Configuration Download'
+ #       run: |
+ #         monaco download --url ${{ vars.DYNATRACE_ENV_URL }} \
+ #           --oauth-client-id DT_CLIENT_ID \
+ #           --oauth-client-secret DT_CLIENT_SECRET \
+ #           --output-folder .generated
+ #       working-directory: ${{ env.TARGET_FOLDER }}
+
+#      - name: 'Re-Generate Monaco Projects Manifest'
+#        run: |
+#          cat <<EOF > ./.generated/manifest-projects.yaml
+#          manifestVersion: "1.0"
+#          projects:
+#            - name: project
+#          environmentGroups:
+#            - name: default
+#              environments:
+#                - name: project
+#                  url:
+#                    value: $DYNATRACE_ENV_URL
+#                  auth:
+#                    oAuth:
+#                      clientId:
+#                        type: environment
+#                        name: DT_CLIENT_ID
+#                      clientSecret:
+#                        type: environment
+#                        name: DT_CLIENT_SECRET
+#          EOF
+#          cat ./.generated/manifest-projects.yaml
+#        working-directory: ${{ env.TARGET_FOLDER }}
+
+#      - name: 'Upload directory as artifact'
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ${{ env.DIR_ARTIFACT_NAME }}
+#          path: ${{ env.TARGET_FOLDER }}/.generated/**
+#          include-hidden-files: true
+#          retention-days: 1
+
+      - name: 'Set the build timestamp'
+        id: build_timestamp
+        shell: bash
+        run: echo "version=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+
+  export_with_monaco:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/dynatrace_monaco_export.yaml
+    if: ${{ github.event.inputs.format == 'monaco' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      dynatrace_env_url: ${{ vars.DYNATRACE_ENV_URL }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+    secrets: inherit
+
+  upload_to_azure:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/azure_blob_upload.yaml
+    if: ${{ github.event.inputs.storage == 'azure-blob' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
+      export_file_name: ${{ github.event.inputs.format }}-${{ github.event.inputs.source_environment }}
+      build_timestamp: ${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+      tf_backend_storage_account: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_storage_account }}
+      tf_backend_container: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_container }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+    secrets: inherit
+
+  push_to_github:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/github_repo_upload.yaml
+    if: ${{ github.event.inputs.storage == 'github-repo' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
+      gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
+      gh_branch_name: ${{ github.event.inputs.format }}-${{ github.event.inputs.source_environment }}-${{ needs.dynatrace_export_configuration.outputs.build_timestamp }}
+    secrets: inherit
