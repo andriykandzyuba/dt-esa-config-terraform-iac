@@ -57,6 +57,7 @@ jobs:
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/${{ github.event.inputs.format }}
@@ -70,6 +71,7 @@ jobs:
       dir_artifact_name: ${{ env.DIR_ARTIFACT_NAME }}
       gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
       gh_repo_name: ${{ vars.GH_REPO_NAME }}
+      dynatrace_env_url: ${{ env.DYNATRACE_ENV_URL }}
 
     steps:
       - name: 'Checkout repository'
@@ -86,7 +88,7 @@ jobs:
     if: ${{ github.event.inputs.format == 'monaco' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
-      dynatrace_env_url: ${{ vars.DYNATRACE_ENV_URL }}
+      dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
       target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
     secrets: inherit
