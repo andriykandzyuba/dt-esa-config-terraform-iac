@@ -63,10 +63,6 @@ jobs:
       # Dynatrace Terraform Provider CLI
       DYNATRACE_TARGET_FOLDER: ${{ inputs.target_folder }}/export/data
 
-    defaults:
-      run:
-        working-directory: ${{ inputs.target_folder }}
-
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -87,11 +83,15 @@ jobs:
           terraform init -input=false
         env:
           TF_VAR_environment: ${{ inputs.environment }}
+        with:
+          working-directory: ${{ inputs.target_folder }}
 
       - name: 'Terraform Validate'
         id: validate
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
+        with:
+          working-directory: ${{ inputs.target_folder }}
 
       - name: 'Configuration Export'
         id: export_configuration
@@ -99,6 +99,8 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
+        with:
+          working-directory: ${{ inputs.target_folder }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
