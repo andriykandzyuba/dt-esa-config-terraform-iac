@@ -62,7 +62,7 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            ls -las .
+            ls -las ${{ inputs.target_folder }}
             az storage blob upload \
               --account-name ${{ inputs.tf_backend_storage_account }} \
               --container-name ${{ inputs.tf_backend_container }} \
