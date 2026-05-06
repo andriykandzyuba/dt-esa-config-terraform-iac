@@ -18,7 +18,7 @@ on:
 
 jobs:
   monaco_export_configuration:
-    name: Monaco Export [${{ github.event.inputs.source_environment }}]
+    name: Monaco Export [${{ inputs.environment }}]
     runs-on: ubuntu-latest
 
     environment: ${{ inputs.environment }}
