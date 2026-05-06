@@ -53,7 +53,7 @@ jobs:
           monaco download --url ${{ env.DYNATRACE_ENV_URL }} \
             --oauth-client-id DT_CLIENT_ID \
             --oauth-client-secret DT_CLIENT_SECRET \
-            --output-folder .generated
+            --output-folder .
         working-directory: ${{ env.TARGET_FOLDER }}
 
       - name: 'Re-Generate Monaco Projects Manifest'
