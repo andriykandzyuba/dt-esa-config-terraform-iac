@@ -106,7 +106,7 @@ jobs:
     secrets: inherit
 
   push_to_github:
-    needs: [export_with_monaco]
+    needs: [export_with_monaco, dynatrace_export_configuration]
     uses: ./.github/workflows/github_repo_upload.yaml
     if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
