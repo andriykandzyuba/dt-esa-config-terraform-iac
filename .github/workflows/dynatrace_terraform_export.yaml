@@ -83,15 +83,11 @@ jobs:
           terraform init -input=false
         env:
           TF_VAR_environment: ${{ inputs.environment }}
-        with:
-          working-directory: ${{ inputs.target_folder }}
 
       - name: 'Terraform Validate'
         id: validate
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
-        with:
-          working-directory: ${{ inputs.target_folder }}
 
       - name: 'Configuration Export'
         id: export_configuration
