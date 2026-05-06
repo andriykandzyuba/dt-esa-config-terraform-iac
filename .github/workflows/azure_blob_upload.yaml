@@ -29,6 +29,10 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+
+    env:
+      TARGET_FOLDER: ${{ inputs.target_folder }}
+
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -41,9 +45,9 @@ jobs:
 
       - name: 'Verify contents'
         run: |
-          echo "Target folder: ${{ inputs.target_folder }}"
+          echo "Target folder: $TARGET_FOLDER"
           ls -la .
-        working-directory: ${{ inputs.target_folder }}
+        working-directory: $TARGET_FOLDER
 
       - name: 'Create Recursive Tarball'
         run: |
