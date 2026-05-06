@@ -145,7 +145,7 @@ jobs:
     secrets: inherit
 
   upload_to_azure:
-    needs: dynatrace_export_configuration
+    needs: [export_with_monaco]
     uses: ./.github/workflows/azure_blob_upload.yaml
     if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:
@@ -159,7 +159,7 @@ jobs:
     secrets: inherit
 
   push_to_github:
-    needs: dynatrace_export_configuration
+    needs: [export_with_monaco]
     uses: ./.github/workflows/github_repo_upload.yaml
     if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
