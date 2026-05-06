@@ -1,4 +1,4 @@
-name: "Monaco Export"
+name: "Dynatrace Monaco Provider Export"
 
 on:
   workflow_call:

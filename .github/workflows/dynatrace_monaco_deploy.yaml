@@ -1,4 +1,4 @@
-name: "Dynatrace Monaco Tool Deploy"
+name: "Dynatrace Monaco Provider Deploy"
 
 on:
   workflow_dispatch:

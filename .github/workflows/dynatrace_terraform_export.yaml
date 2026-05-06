@@ -1,4 +1,4 @@
-name: "Dynatrace Terraform Provider CLI Export"
+name: "Dynatrace Terraform Provider Export"
 
 on:
   workflow_dispatch:
