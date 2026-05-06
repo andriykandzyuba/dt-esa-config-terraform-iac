@@ -71,6 +71,11 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "$TARGET_FOLDER"
+          ls -la "$TARGET_FOLDER"
+
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
         with:
