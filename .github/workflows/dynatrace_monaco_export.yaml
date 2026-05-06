@@ -12,6 +12,9 @@ on:
       dir_artifact_name:
         required: true
         type: string
+      target_folder:
+        required: true
+        type: string
 
 jobs:
   monaco_export_configuration:
@@ -25,13 +28,15 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DIR_ARTIFACT_NAME: ${{ inputs.dir_artifact_name }}
-      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+      TARGET_FOLDER:  ${{ inputs.target_folder }}
 
     steps:
-      - name: 'Set up working directory'
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Create working directory'
         run: |
           mkdir -p "$TARGET_FOLDER"
-          mkdir -p "$TARGET_FOLDER/.generated"
           ls -la "$TARGET_FOLDER"
 
       - name: 'Install Dynatrace Monaco Tool'

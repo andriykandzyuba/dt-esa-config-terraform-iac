@@ -142,6 +142,7 @@ jobs:
       environment: ${{ github.event.inputs.source_environment }}
       dynatrace_env_url: ${{ vars.DYNATRACE_ENV_URL }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
     secrets: inherit
 
   upload_to_azure:
