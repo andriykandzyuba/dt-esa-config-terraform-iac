@@ -146,7 +146,7 @@ jobs:
     secrets: inherit
 
   upload_to_azure:
-    needs: [export_with_monaco]
+    needs: [export_with_monaco, dynatrace_export_configuration]
     uses: ./.github/workflows/azure_blob_upload.yaml
     if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:

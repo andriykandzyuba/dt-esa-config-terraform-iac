@@ -45,9 +45,9 @@ jobs:
 
       - name: 'Verify contents'
         run: |
-          echo "Target folder: $TARGET_FOLDER"
+          echo "Target folder: ${{ inputs.target_folder }}"
           ls -la .
-        working-directory: $TARGET_FOLDER
+        working-directory: ${{ inputs.target_folder }}
 
       - name: 'Create Recursive Tarball'
         run: |
