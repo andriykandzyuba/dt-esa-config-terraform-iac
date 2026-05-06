@@ -58,7 +58,7 @@ jobs:
 
       - name: 'Re-Generate Monaco Projects Manifest'
         run: |
-          cat <<EOF > ./.generated/manifest-projects.yaml
+          cat <<EOF > ./manifest-projects.yaml
           manifestVersion: "1.0"
           projects:
             - name: project
@@ -77,13 +77,13 @@ jobs:
                         type: environment
                         name: DT_CLIENT_SECRET
           EOF
-          cat ./.generated/manifest-projects.yaml
+          cat ./manifest-projects.yaml
         working-directory: ${{ env.TARGET_FOLDER }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.DIR_ARTIFACT_NAME }}
-          path: ${{ env.TARGET_FOLDER }}/.generated/**
+          path: ${{ env.TARGET_FOLDER }}/**
           include-hidden-files: true
           retention-days: 1
