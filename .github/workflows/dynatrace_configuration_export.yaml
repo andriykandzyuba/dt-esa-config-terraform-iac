@@ -21,13 +21,6 @@ on:
           - zpa13569
           - bwf66177
         default: yhu28601
-      action:
-        description: "Action to perform"
-        required: true
-        type: choice
-        options:
-          - export
-        default: export
       format:
         description: "Export format"
         required: true
@@ -51,7 +44,7 @@ concurrency:
 
 jobs:
   dynatrace_export_configuration:
-    name: Dynatrace ${{ github.event.inputs.format }} ${{ github.event.inputs.action }} [${{ github.event.inputs.source_environment }}]
+    name: Dynatrace Export ${{ github.event.inputs.format }} [${{ github.event.inputs.source_environment }}]
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.source_environment }}
 
@@ -93,8 +86,19 @@ jobs:
       target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
     secrets: inherit
 
+  export_with_terraform:
+    needs: dynatrace_export_configuration
+    uses: ./.github/workflows/dynatrace_terraform_export.yaml
+    if: ${{ github.event.inputs.format == 'terraform' }}
+    with:
+      environment: ${{ github.event.inputs.source_environment }}
+      dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
+      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
+    secrets: inherit
+
   upload_to_azure:
-    needs: [export_with_monaco, dynatrace_export_configuration]
+    needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/azure_blob_upload.yaml
     if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:
@@ -108,7 +112,7 @@ jobs:
     secrets: inherit
 
   push_to_github:
-    needs: [export_with_monaco, dynatrace_export_configuration]
+    needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/github_repo_upload.yaml
     if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
