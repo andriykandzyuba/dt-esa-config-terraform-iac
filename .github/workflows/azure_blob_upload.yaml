@@ -43,12 +43,6 @@ jobs:
           name: ${{ inputs.dir_artifact_name }}
           path: ${{ inputs.target_folder }}
 
-      #- name: 'Verify contents'
-      #  run: |
-      #    echo "Target folder: ${{ inputs.target_folder }}"
-      #    ls -la .
-      #  working-directory: ${{ inputs.target_folder }}
-
       - name: 'Create Recursive Tarball'
         env:
           ARCHIVE: ${{ inputs.export_file_name }}-${{ inputs.build_timestamp }}.tar.gz
