@@ -31,12 +31,6 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: 'Download the directory'
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.dir_artifact_name }}
-          path: ${{ inputs.target_folder }}
-
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
