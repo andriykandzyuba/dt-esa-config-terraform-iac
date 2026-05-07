@@ -94,7 +94,7 @@ jobs:
     with:
       environment: ${{ github.event.inputs.source_environment }}
       target_folder: ${{ needs.dynatrace_deploy_configuration.outputs.target_folder }}
-      export_file_name: ${{ github.event.inputs.format }}-${{ github.event.inputs.source_environment }}
+      export_file_name: ${{ github.event.inputs.artifact_name }}
       tf_backend_storage_account: ${{ needs.dynatrace_deploy_configuration.outputs.tf_backend_storage_account }}
       tf_backend_container: ${{ needs.dynatrace_deploy_configuration.outputs.tf_backend_container }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
