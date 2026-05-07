@@ -36,10 +36,6 @@ jobs:
           mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
           mkdir -p "${{ inputs.target_folder }}"
 
-      - name: 'Issue with Github Action Repository'
-        run: |
-          ls -las /home/runner/work/_temp/
-
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
@@ -51,6 +47,11 @@ jobs:
               --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz" \
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
+
+      - name: 'Issue with Github Action Repository'
+        if: ${{ always() }}
+        run: |
+          ls -las /home/runner/work/_temp/
 
       - name: 'Extract Dynatrace Configuration Archive'
         env:
