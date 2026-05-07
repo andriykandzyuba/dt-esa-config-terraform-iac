@@ -1,0 +1,38 @@
+name: "Azure Blob Storage Download"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      target_folder:
+        required: true
+        type: string
+      export_file_name:
+        required: true
+        type: string
+      tf_backend_storage_account:
+        required: true
+        type: string
+      tf_backend_container:
+        required: true
+        type: string
+      dir_artifact_name:
+        required: true
+        type: string
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Download Dynatrace Configuration Archive'
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob --help

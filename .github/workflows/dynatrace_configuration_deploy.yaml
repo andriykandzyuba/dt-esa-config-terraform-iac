@@ -97,7 +97,7 @@ jobs:
 
   download_from_azure:
     needs: [dynatrace_deploy_configuration]
-    uses: ./.github/workflows/azure_blob_download.yaml
+    uses: ./.github/workflows/azure_blob_download-v2.yaml
     if: (github.event.inputs.storage == 'azure-blob') && contains(needs.*.result, 'success')
     with:
       environment: ${{ github.event.inputs.source_environment }}
