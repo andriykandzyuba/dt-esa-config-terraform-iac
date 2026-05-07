@@ -47,15 +47,14 @@ jobs:
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
 
-      - name: 'Issue with Github Action Repository'
-        if: ${{ always() }}
+      - name: 'Make directory for extraction'
         run: |
-          ls -las /home/runner/work/_temp/
+          echo $RUNNER_TEMP
+          mkdir -p $RUNNER_TEMP/${{ inputs.target_folder }}
+          ls -lsa $RUNNER_TEMP/${{ inputs.target_folder }}
 
       - name: 'Extract Dynatrace Configuration Archive'
         run: |
-          mkdir -p $RUNNER_TEMP/${{ inputs.target_folder }}
-          ls -lsa $RUNNER_TEMP/${{ inputs.target_folder }}
           tar -xzvf ${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
           ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
         working-directory: ${{ inputs.target_folder }}
