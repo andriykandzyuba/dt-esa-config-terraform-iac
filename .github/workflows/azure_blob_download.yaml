@@ -48,16 +48,13 @@ jobs:
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
 
-      - name: 'Debug directory'
-        run: |
-           ls -las .
-           ls -la "${{ inputs.target_folder }}"
-
       - name: 'Extract Dynatrace Configuration Archive'
         env:
             ARCHIVE: ${{ inputs.target_folder }}
         run: |
-          tar -xzvf ./${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          ls -las .
+          ls -la "${{ inputs.target_folder }}"
+          tar -xzvf ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
           mv "$RUNNER_TEMP/${{ inputs.target_folder }}" .
         working-directory: ${{ inputs.target_folder }}
 
