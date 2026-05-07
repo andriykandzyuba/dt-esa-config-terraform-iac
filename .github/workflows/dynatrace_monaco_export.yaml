@@ -12,10 +12,13 @@ on:
       dir_artifact_name:
         required: true
         type: string
+      target_folder:
+        required: true
+        type: string
 
 jobs:
   monaco_export_configuration:
-    name: Monaco Export [${{ github.event.inputs.source_environment }}]
+    name: Monaco Export [${{ inputs.environment }}]
     runs-on: ubuntu-latest
 
     environment: ${{ inputs.environment }}
@@ -25,10 +28,13 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DIR_ARTIFACT_NAME: ${{ inputs.dir_artifact_name }}
-      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/monaco
+      TARGET_FOLDER:  ${{ inputs.target_folder }}
 
     steps:
-      - name: 'Set up working directory'
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Create working directory'
         run: |
           mkdir -p "$TARGET_FOLDER"
           ls -la "$TARGET_FOLDER"
@@ -42,17 +48,17 @@ jobs:
           monaco version
         working-directory: ${{ env.TARGET_FOLDER }}
 
-      #- name: 'Dynatrace Monaco Configuration Download'
-      #  run: |
-      #    monaco download --url ${{ env.DYNATRACE_ENV_URL }} \
-      #      --oauth-client-id DT_CLIENT_ID \
-      #      --oauth-client-secret DT_CLIENT_SECRET \
-      #      --output-folder .generated
-      #  working-directory: ${{ env.TARGET_FOLDER }}
+      - name: 'Dynatrace Monaco Configuration Download'
+        run: |
+          monaco download --url ${{ inputs.dynatrace_env_url }} \
+            --oauth-client-id DT_CLIENT_ID \
+            --oauth-client-secret DT_CLIENT_SECRET \
+            --output-folder .
+        working-directory: ${{ inputs.target_folder }}
 
       - name: 'Re-Generate Monaco Projects Manifest'
         run: |
-          cat <<EOF > ./.generated/manifest-projects.yaml
+          cat <<EOF > ./manifest-projects.yaml
           manifestVersion: "1.0"
           projects:
             - name: project
@@ -71,13 +77,13 @@ jobs:
                         type: environment
                         name: DT_CLIENT_SECRET
           EOF
-          cat ./.generated/manifest-projects.yaml
+          cat ./manifest-projects.yaml
         working-directory: ${{ env.TARGET_FOLDER }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.DIR_ARTIFACT_NAME }}
-          path: ${{ env.TARGET_FOLDER }}/.generated/**
+          path: ${{ env.TARGET_FOLDER }}/**
           include-hidden-files: true
           retention-days: 1

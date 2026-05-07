@@ -1,81 +1,90 @@
 name: "Dynatrace Terraform Provider Export"
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
-        description: "Target environment to deploy"
         required: true
-        type: choice
-        options:
-          - yhu28601
-          - yyo96051
-          - val72867
-          - ual
-        default: yhu28601
-      terraform_action:
-        description: "Terraform action to perform"
+        type: string
+      dynatrace_env_url:
         required: true
-        type: choice
-        options:
-          - list-exclusions
-          - export
-        default: list-exclusions
+        type: string
+      dir_artifact_name:
+        required: true
+        type: string
+      target_folder:
+        required: true
+        type: string
 
 # Limit concurrent runs per environment to prevent state conflicts
 concurrency:
-  group: extract-api-token-${{ github.event.inputs.environment }}
+  group: extract-api-token-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   call_generate_dynatrace_api_token:
-    name: "Call Generate API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    name: "Call Generate API Token Workflow for environment: [${{ inputs.environment }}]"
     uses: ./.github/workflows/generate_api_token.yaml
     secrets: inherit
     with:
-      environment: ${{ github.event.inputs.environment }}
+      environment: ${{ inputs.environment }}
 
   call_extract_dynatrace_api_token:
-    name: "Call Extract API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    name: "Call Extract API Token Workflow for environment: [${{ inputs.environment }}]"
     uses: ./.github/workflows/extract_api_token.yaml
     needs: call_generate_dynatrace_api_token
     secrets: inherit
     with:
-      environment: ${{ github.event.inputs.environment }}
+      environment: ${{ inputs.environment }}
 
   dynatrace_export_configuration:
-    name: Terraform IaC ${{ github.event.inputs.terraform_action }} [${{ github.event.inputs.environment }}]
+    name: Terraform Export [${{ inputs.environment }}]
     runs-on: ubuntu-latest
     needs: call_extract_dynatrace_api_token
 
     # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
     # By setting the environment in the workflow, you can leverage these features.
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
 
     env:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: environments/${{ github.event.inputs.environment }}/export
+      TF_WORKING_DIR: ${{ inputs.target_folder }}
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
-      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+      DYNATRACE_ENV_URL: ${{ inputs.dynatrace_env_url }}
       DYNATRACE_API_TOKEN: ${{ needs.call_extract_dynatrace_api_token.outputs.api_token }}
       # Dynatrace OAuth2 Client
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Terraform Provider CLI
-      DYNATRACE_TARGET_FOLDER: environments/${{ github.event.inputs.environment }}/export/data
-
-    defaults:
-      run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
+      DYNATRACE_TARGET_FOLDER: ${{ inputs.target_folder }}/export/data
 
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
+
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "$TF_WORKING_DIR"
+          ls -la "$TF_WORKING_DIR"
+
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > ./__providers__.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.91.1"
+              }
+            }
+          }
+          EOF
+          ls -las .
 
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
@@ -87,32 +96,33 @@ jobs:
         run: |
           terraform init -input=false
         env:
-          TF_VAR_environment: ${{ github.event.inputs.environment }}
+          TF_VAR_environment: ${{ inputs.environment }}
 
       - name: 'Terraform Validate'
         id: validate
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
 
-      - name: 'Configuration Exclusions'
-        id: list_exclusions
-        if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'list-exclusions'
-        run: |
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
-            -export -list-exclusions
-
       - name: 'Configuration Export'
         id: export_configuration
-        if: steps.validate.outcome == 'success' && github.event.inputs.terraform_action == 'export'
+        if: steps.validate.outcome == 'success'
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
 
+      - name: 'Upload directory as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.dir_artifact_name }}
+          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/**
+          include-hidden-files: true
+          retention-days: 1
+
   call_delete_dynatrace_api_token:
-    name: "Call Delete API Token Workflow for environment: [${{ github.event.inputs.environment }}]"
+    name: "Call Delete API Token Workflow for environment: [${{ inputs.environment }}]"
     uses: ./.github/workflows/delete_api_token.yaml
     needs: dynatrace_export_configuration
     if: always()
     secrets: inherit
     with:
-      environment: ${{ github.event.inputs.environment }}
+      environment: ${{ inputs.environment }}
