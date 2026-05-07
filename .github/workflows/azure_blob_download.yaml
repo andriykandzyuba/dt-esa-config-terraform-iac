@@ -34,9 +34,9 @@ jobs:
       - name: 'Create working directories'
         run: |
           mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
-          ls -la "$RUNNER_TEMP/${{ inputs.target_folder }}"
           mkdir -p "${{ inputs.target_folder }}"
-          ls -la "${{ inputs.target_folder }}"
+          ls -la "$RUNNER_TEMP"
+          ls -la "$RUNNER_TEMP/${{ inputs.target_folder }}"
 
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
@@ -46,7 +46,7 @@ jobs:
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
               --name ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
-              --file $RUNNER_TEMP/${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
+              --file "$RUNNER_TEMP/${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz" \
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
 
