@@ -100,7 +100,8 @@ jobs:
   upload_to_azure:
     needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/azure_blob_upload.yaml
-    if: ${{ github.event.inputs.storage == 'azure-blob' }}
+    if: always() && (github.event.inputs.storage == 'azure-blob') && contains(needs.*.result, 'success')
+    ##if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
@@ -114,7 +115,8 @@ jobs:
   push_to_github:
     needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/github_repo_upload.yaml
-    if: ${{ github.event.inputs.storage == 'github-repo' }}
+    if: always() && (github.event.inputs.storage == 'github-repo') && contains(needs.*.result, 'success')
+    ##if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
