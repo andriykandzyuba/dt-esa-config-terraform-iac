@@ -31,10 +31,10 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      #- name: 'Create working directories'
-      #  run: |
-      #    mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
-      #    mkdir -p "${{ inputs.target_folder }}"
+      - name: 'Create working directories'
+        run: |
+          mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          mkdir -p "${{ inputs.target_folder }}"
 
       - name: 'Issue with Github Action Repository'
         run: |
@@ -43,7 +43,6 @@ jobs:
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
-          azcliversion: "2.9.1"
           inlineScript: |
             az storage blob download \
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
