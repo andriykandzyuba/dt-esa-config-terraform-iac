@@ -56,9 +56,11 @@ jobs:
 
       - name: 'Extract Dynatrace Configuration Archive'
         run: |
-          ls -las .
           tar -xzvf ${{ inputs.export_file_name }}.tar.gz -C $RUNNER_TEMP/${{ inputs.target_folder }}
-          ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
+
+      - name: 'List extracted files'
+        run: |
+          ls -lsa $RUNNER_TEMP/${{ inputs.target_folder }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
