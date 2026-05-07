@@ -37,7 +37,7 @@ jobs:
           mkdir -p "${{ inputs.target_folder }}"
 
       - name: 'Download Dynatrace Configuration Archive'
-        uses: azure/cli@v2
+        uses: azure/cli@v3
         with:
           inlineScript: |
             az storage blob download \
