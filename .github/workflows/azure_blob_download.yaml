@@ -25,15 +25,23 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Cleanup caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+            gh cache delete --all
+
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
       - name: 'Create working directories'
         run: |
-          mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
           mkdir -p "${{ inputs.target_folder }}"
 
       - name: 'Download Dynatrace Configuration Archive'
@@ -44,7 +52,7 @@ jobs:
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
               --name ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
-              --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz" \
+              --file ${{ inputs.export_file_name }}.tar.gz" \
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
 
