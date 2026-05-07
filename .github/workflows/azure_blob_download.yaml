@@ -57,6 +57,9 @@ jobs:
       - name: 'Extract Dynatrace Configuration Archive'
         run: |
           tar -xzvf ${{ inputs.export_file_name }}.tar.gz -C $RUNNER_TEMP/${{ inputs.target_folder }}
+          mkdir -p ${{ inputs.target_folder }}
+          mv $RUNNER_TEMP/${{ inputs.target_folder }}/* ./${{ inputs.target_folder }}/
+          ls -lsa ./${{ inputs.target_folder }}
 
       - name: 'List extracted files'
         run: |
@@ -66,6 +69,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.DIR_ARTIFACT_NAME }}
-          path: $RUNNER_TEMP/${{ inputs.target_folder }}
+          path: ${{ inputs.target_folder }}
           include-hidden-files: true
           retention-days: 1
