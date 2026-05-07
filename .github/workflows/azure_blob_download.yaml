@@ -31,6 +31,11 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "${{ inputs.target_folder }}"
+          ls -la "${{ inputs.target_folder }}"
+
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
