@@ -59,11 +59,10 @@ jobs:
           tar -xzvf ${{ inputs.export_file_name }}.tar.gz -C $RUNNER_TEMP/${{ inputs.target_folder }}
           mkdir -p ${{ inputs.target_folder }}
           mv $RUNNER_TEMP/${{ inputs.target_folder }}/* ./${{ inputs.target_folder }}/
-          ls -lsa ./${{ inputs.target_folder }}
 
       - name: 'List extracted files'
         run: |
-          ls -lsa $RUNNER_TEMP/${{ inputs.target_folder }}
+          ls -lsa ${{ inputs.target_folder }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
