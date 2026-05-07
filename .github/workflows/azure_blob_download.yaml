@@ -25,7 +25,6 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
-
     environment: ${{ inputs.environment }}
 
     steps:
@@ -39,6 +38,7 @@ jobs:
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
+          azcliversion: agentazcliversion
           inlineScript: |
             az storage blob download \
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
