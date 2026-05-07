@@ -31,10 +31,10 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: 'Create working directories'
-        run: |
-          mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
-          mkdir -p "${{ inputs.target_folder }}"
+      #- name: 'Create working directories'
+      #  run: |
+      #    mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
+      #    mkdir -p "${{ inputs.target_folder }}"
 
       - name: 'Issue with Github Action Repository'
         run: |
