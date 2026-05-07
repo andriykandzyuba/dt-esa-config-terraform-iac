@@ -32,12 +32,6 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: Cleanup caches
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh cache delete --all
-
       - name: 'Create working directories'
         run: |
           mkdir -p "${{ inputs.target_folder }}"
@@ -50,7 +44,7 @@ jobs:
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
               --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
               --name ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
-              --file ${{ inputs.export_file_name }}.tar.gz" \
+              --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz" \
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
 
@@ -59,20 +53,19 @@ jobs:
         run: |
           ls -las /home/runner/work/_temp/
 
-      #- name: 'Extract Dynatrace Configuration Archive'
-      #  env:
-      #      ARCHIVE: ${{ inputs.target_folder }}
-      #  run: |
-      #    ls -las ${{ inputs.target_folder }}
-      #    ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
-      #    tar -xzvf ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
-      #    ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
-      #  working-directory: ${{ inputs.target_folder }}
+      - name: 'Extract Dynatrace Configuration Archive'
+        env:
+            ARCHIVE: ${{ inputs.target_folder }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          tar -xzvf ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
+        working-directory: ${{ inputs.target_folder }}
 
-      #- name: 'Upload directory as artifact'
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: ${{ env.DIR_ARTIFACT_NAME }}
-      #    path: ${{ inputs.target_folder }}/**
-      #    include-hidden-files: true
-      #    retention-days: 1
+      - name: 'Upload directory as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DIR_ARTIFACT_NAME }}
+          path: ${{ inputs.target_folder }}/**
+          include-hidden-files: true
+          retention-days: 1
