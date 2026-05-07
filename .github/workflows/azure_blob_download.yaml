@@ -1,0 +1,66 @@
+name: "Azure Blob Storage Download"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      target_folder:
+        required: true
+        type: string
+      export_file_name:
+        required: true
+        type: string
+      tf_backend_storage_account:
+        required: true
+        type: string
+      tf_backend_container:
+        required: true
+        type: string
+      dir_artifact_name:
+        required: true
+        type: string
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Download the directory'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.dir_artifact_name }}
+          path: ${{ inputs.target_folder }}
+
+      - name: 'Download Dynatrace Configuration Archive'
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob download \
+              --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
+              --container-name ${{ vars.TF_BACKEND_CONTAINER }} \
+              --name ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
+              --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
+              --auth-mode key \
+              --account-key ${{ secrets.ARM_ACCESS_KEY }}
+
+      - name: 'Extract Dynatrace Configuration Archive'
+        env:
+            ARCHIVE: ${{ inputs.target_folder }}
+        run: |
+          tar -xzvf ./${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          mv "$RUNNER_TEMP/${{ inputs.target_folder }}" .
+        working-directory: ${{ inputs.target_folder }}
+
+      - name: 'Upload directory as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DIR_ARTIFACT_NAME }}
+          path: ${{ inputs.target_folder }}/**
+          include-hidden-files: true
+          retention-days: 1
