@@ -72,6 +72,20 @@ jobs:
           mkdir -p "$TF_WORKING_DIR"
           ls -la "$TF_WORKING_DIR"
 
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > ./__providers__.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.91.1"
+              }
+            }
+          }
+          EOF
+          ls -las .
+
       - name: 'Terraform Setup for IaC'
         uses: hashicorp/setup-terraform@v3
         with:
