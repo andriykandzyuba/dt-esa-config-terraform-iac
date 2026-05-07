@@ -67,7 +67,7 @@ jobs:
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.DIR_ARTIFACT_NAME }}
+          name: ${{ inputs.dir_artifact_name }}
           path: ${{ inputs.target_folder }}
           include-hidden-files: true
           retention-days: 1
