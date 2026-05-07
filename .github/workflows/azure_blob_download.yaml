@@ -57,7 +57,7 @@ jobs:
             ARCHIVE: ${{ inputs.target_folder }}
         run: |
           mkdir -p "$RUNNER_TEMP/${{ inputs.target_folder }}"
-          tar -xzvf ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
+          tar -xzvf ${{ inputs.export_file_name }}.tar.gz -C "$RUNNER_TEMP/${{ inputs.target_folder }}"
           ls -las "$RUNNER_TEMP/${{ inputs.target_folder }}"
         working-directory: ${{ inputs.target_folder }}
 
