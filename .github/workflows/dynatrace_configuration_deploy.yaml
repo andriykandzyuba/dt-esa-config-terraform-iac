@@ -1,0 +1,88 @@
+name: "Dynatrace Configuration Deploy"
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: "Source Dynatrace environment"
+        required: true
+        type: choice
+        options:
+          - yhu28601
+          - val72867
+          - vtq72629
+          - avc65257
+          - jqa38275
+          - rwb66447
+          - yyo96051
+        default: yhu28601
+      target_environment:
+        description: "Target Dynatrace environment"
+        required: true
+        type: choice
+        options:
+          - nyw40909
+          - bkh87134
+          - zpa13569
+          - bse40162
+          - jkf42365
+          - tqe98595
+          - sxd52035
+          - sby39331
+        default: nyw40909
+      storage:
+        description: "Source storage type"
+        required: true
+        type: choice
+        options:
+          - azure-blob
+          - github-repo
+        default: azure-blob
+      artifact_name:
+        description: "Source Configuration File or Github Repo Branch Name"
+        required: true
+        type: string
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - deploy
+          - delete
+        default: deploy
+
+concurrency:
+  group: deploy-${{ github.event.inputs.source_environment }}-to-${{ github.event.inputs.target_environment }}
+  cancel-in-progress: false
+
+jobs:
+  dynatrace_deploy_configuration:
+    name: Dynatrace Deploy ${{ github.event.inputs.monaco_action }} [${{ github.event.inputs.target_environment }}]
+    runs-on: ubuntu-latest
+
+    # GitHub Repo Environments can be used to protect against accidental deployments to production and to provide environment-specific secrets and variables.
+    # By setting the environment in the workflow, you can leverage these features.
+    environment: ${{ github.event.inputs.target_environment }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
+      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/${{ github.event.inputs.format }}
+      DIR_ARTIFACT_NAME: export-dir-artifact
+
+    outputs:
+      build_timestamp: ${{ steps.build_timestamp.outputs.version }}
+      target_folder: ${{ env.TARGET_FOLDER }}
+      tf_backend_storage_account: ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}
+      tf_backend_container: ${{ vars.TF_BACKEND_CONTAINER }}
+      dir_artifact_name: ${{ env.DIR_ARTIFACT_NAME }}
+      gh_repo_owner: ${{ vars.GH_REPO_OWNER }}
+      gh_repo_name: ${{ vars.GH_REPO_NAME }}
+      dynatrace_env_url: ${{ env.DYNATRACE_ENV_URL }}
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
