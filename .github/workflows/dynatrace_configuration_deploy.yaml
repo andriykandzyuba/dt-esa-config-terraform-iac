@@ -30,6 +30,14 @@ on:
           - sxd52035
           - sby39331
         default: nyw40909
+      format:
+        description: "Export format"
+        required: true
+        type: choice
+        options:
+          - monaco
+          - terraform
+        default: monaco
       storage:
         description: "Source storage type"
         required: true
