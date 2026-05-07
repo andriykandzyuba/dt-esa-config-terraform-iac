@@ -43,7 +43,7 @@ jobs:
       - name: 'Download Dynatrace Configuration Archive'
         uses: azure/cli@v2
         with:
-          azcliversion: latest
+          azcliversion: "2.9.1"
           inlineScript: |
             az storage blob download \
               --account-name ${{ vars.TF_BACKEND_STORAGE_ACCOUNT }} \
