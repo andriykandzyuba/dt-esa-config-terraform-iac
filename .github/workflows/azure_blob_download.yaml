@@ -66,6 +66,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.DIR_ARTIFACT_NAME }}
-          path: "$RUNNER_TEMP/${{ inputs.target_folder }}/**
+          path: $RUNNER_TEMP/${{ inputs.target_folder }}/**
           include-hidden-files: true
           retention-days: 1
