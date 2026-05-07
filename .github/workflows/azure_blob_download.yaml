@@ -47,6 +47,8 @@ jobs:
               --file ${{ inputs.target_folder }}/${{ inputs.export_file_name }}.tar.gz \
               --auth-mode key \
               --account-key ${{ secrets.ARM_ACCESS_KEY }}
+           ls -las .
+           ls -la "${{ inputs.target_folder }}"
 
       - name: 'Extract Dynatrace Configuration Archive'
         env:
