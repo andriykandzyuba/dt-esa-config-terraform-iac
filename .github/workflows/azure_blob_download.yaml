@@ -41,7 +41,7 @@ jobs:
           curl --location -s https://mcr.microsoft.com/v2/azure-cli/tags/list
 
       - name: 'Download Dynatrace Configuration Archive'
-        uses: azure/cli@v2
+        uses: azure/cli@fix-161
         with:
           inlineScript: |
             az storage blob download \
