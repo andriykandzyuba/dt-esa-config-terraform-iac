@@ -29,14 +29,14 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
       - name: Cleanup caches
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-            gh cache delete --all
-
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
+          gh cache delete --all
 
       - name: 'Create working directories'
         run: |
