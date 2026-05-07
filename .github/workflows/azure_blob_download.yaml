@@ -50,6 +50,7 @@ jobs:
       - name: 'Make directory for extraction'
         run: |
           echo $RUNNER_TEMP
+          echo ${{ inputs.target_folder }}
           mkdir -p $RUNNER_TEMP/${{ inputs.target_folder }}
           ls -lsa $RUNNER_TEMP/${{ inputs.target_folder }}
 
