@@ -6,6 +6,9 @@ on:
       environment:
         required: true
         type: string
+      target_folder:
+        required: true
+        type: string
       dir_artifact_name:
         required: true
         type: string
