@@ -70,6 +70,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ inputs.target_folder }}/${REPO_NAME}
+          path: ${{ inputs.target_folder }}
           include-hidden-files: true
           retention-days: 1
