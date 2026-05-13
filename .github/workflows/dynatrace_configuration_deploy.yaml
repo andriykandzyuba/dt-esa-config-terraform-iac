@@ -57,8 +57,8 @@ on:
         options:
           - dry-run
           - deploy
-          - delete
-        default: deploy
+        #  - delete
+        default: dry-run
 
 concurrency:
   group: deploy-${{ github.event.inputs.source_environment }}-to-${{ github.event.inputs.target_environment }}
@@ -119,4 +119,21 @@ jobs:
       gh_repo_name: ${{ needs.dynatrace_deploy_configuration.outputs.gh_repo_name }}
       gh_repo_owner: ${{ needs.dynatrace_deploy_configuration.outputs.gh_repo_owner }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
+    secrets: inherit
+
+  monaco_deploy:
+    needs: [ dynatrace_export_configuration, download_from_azure, checkout_from_github ]
+    uses: ./.github/workflows/dynatrace_monaco_deploy.yaml
+    if: |
+      always() &&
+      github.event.inputs.format == 'monaco' &&
+      (needs.download_from_azure.result == 'success' || needs.checkout_from_github.result == 'success')
+    with:
+      environment: ${{ github.event.inputs.target_environment }}
+      source_environment: ${{ github.event.inputs.source_environment }}
+      target_environment: ${{ github.event.inputs.target_environment }}
+      action: ${{ github.event.inputs.action }}
+      dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
+      dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
+      target_folder: ${{ needs.dynatrace_deploy_configuration.outputs.target_folder }}
     secrets: inherit
