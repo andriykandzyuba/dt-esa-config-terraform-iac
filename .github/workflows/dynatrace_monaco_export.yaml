@@ -67,7 +67,7 @@ jobs:
               environments:
                 - name: project
                   url:
-                    value: $DYNATRACE_ENV_URL
+                    value: DYNATRACE_ENV_URL
                   auth:
                     oAuth:
                       clientId:
