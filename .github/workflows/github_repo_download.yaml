@@ -1,4 +1,4 @@
-name: "GitHub Repository Upload"
+name: "GitHub Repository Download"
 
 on:
   workflow_call:
