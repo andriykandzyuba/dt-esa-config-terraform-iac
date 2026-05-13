@@ -118,5 +118,5 @@ jobs:
       gh_branch_name: ${{ github.event.inputs.artifact_name }}
       gh_repo_name: ${{ needs.dynatrace_deploy_configuration.outputs.gh_repo_name }}
       gh_repo_owner: ${{ needs.dynatrace_deploy_configuration.outputs.gh_repo_owner }}
-      dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
+      dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
     secrets: inherit
