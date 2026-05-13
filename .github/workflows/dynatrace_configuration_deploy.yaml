@@ -122,7 +122,7 @@ jobs:
     secrets: inherit
 
   monaco_deploy:
-    needs: [ dynatrace_export_configuration, download_from_azure, checkout_from_github ]
+    needs: [ dynatrace_deploy_configuration, download_from_azure, checkout_from_github ]
     uses: ./.github/workflows/dynatrace_monaco_deploy.yaml
     if: |
       always() &&
@@ -133,7 +133,7 @@ jobs:
       source_environment: ${{ github.event.inputs.source_environment }}
       target_environment: ${{ github.event.inputs.target_environment }}
       action: ${{ github.event.inputs.action }}
-      dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
+      dynatrace_env_url: ${{ needs.dynatrace_deploy_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
       target_folder: ${{ needs.dynatrace_deploy_configuration.outputs.target_folder }}
     secrets: inherit
