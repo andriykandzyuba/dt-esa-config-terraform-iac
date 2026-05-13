@@ -50,7 +50,7 @@ jobs:
       - name: 'Clone external repository'
         run: |
           # GH_TOKEN is in env, so gh uses it automatically
-          gh repo clone "${REPO_OWNER}/${REPO_NAME}" ${{ inputs.target_folder }}
+          gh repo clone ${REPO_OWNER}/${REPO_NAME} ${{ inputs.target_folder }}
           cd "${{ inputs.target_folder }}
           gh auth setup-git
 
