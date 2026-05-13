@@ -21,6 +21,9 @@ on:
       target_folder:
         required: true
         type: string
+      dynatrace_env_url:
+        required: true
+        type: string
 
 jobs:
   dynatrace_monaco_deploy:
