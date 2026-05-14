@@ -53,6 +53,7 @@ jobs:
         # runtime so no values are hard-coded in .tf files. The state key is
         # namespaced per environment (e.g. dev/terraform.tfstate).
         run: |
+          export TF_LOG=TRACE
           terraform init -input=false \
             -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
             -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \

@@ -32,7 +32,7 @@ jobs:
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: environments/${{ inputs.environment }}/security
+      TF_WORKING_DIR: modules/dynatrace_api_token
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
