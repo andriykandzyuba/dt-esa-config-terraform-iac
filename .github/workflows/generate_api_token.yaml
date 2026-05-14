@@ -54,6 +54,7 @@ jobs:
 
       - name: 'Create Terraform providers configuration'
         run: |
+          pwd
           cat <<EOF > ./__providers__.tf
           terraform {
             required_providers {
