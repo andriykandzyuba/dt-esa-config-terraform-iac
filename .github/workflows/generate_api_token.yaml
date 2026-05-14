@@ -34,10 +34,6 @@ jobs:
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
 
-    #defaults:
-    #  run:
-    #    working-directory: ${{ env.TF_WORKING_DIR }}
-
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -50,10 +46,10 @@ jobs:
       - name: 'Create working directory'
         run: |
           mkdir -p "$TF_WORKING_DIR"
-          ls -la "$TF_WORKING_DIR"
 
       - name: 'Create Terraform providers configuration'
         run: |
+          cd "$TF_WORKING_DIR"
           pwd
           cat <<EOF > ./__providers__.tf
           terraform {
