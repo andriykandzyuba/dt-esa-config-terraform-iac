@@ -27,24 +27,20 @@ jobs:
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: environments/${{ inputs.environment }}/security
+      TF_WORKING_DIR: modules/dynatrace_api_token
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
 
-    #defaults:
-    #  run:
-    #    working-directory: ${{ env.TF_WORKING_DIR }}
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
-
-      - name: 'Make directory for extraction'
-        run: |
-          mkdir -p ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
