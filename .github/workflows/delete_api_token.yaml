@@ -57,7 +57,8 @@ jobs:
             -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
             -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
             -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-            -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
+            -backend-config="key=$TF_WORKING_DIR/terraform.tfstate" \
+            -lock-timeout=1m
         env:
           TF_VAR_environment: ${{ inputs.environment }}
 
