@@ -49,8 +49,6 @@ jobs:
 
       - name: 'Create Terraform providers configuration'
         run: |
-          cd "$TF_WORKING_DIR"
-          pwd
           cat <<EOF > ./__providers__.tf
           terraform {
             required_providers {
@@ -99,6 +97,7 @@ jobs:
           }
           EOF
           ls -las .
+        working-directory: $TF_WORKING_DIR
 
       - name: 'Terraform Init'
         id: init
