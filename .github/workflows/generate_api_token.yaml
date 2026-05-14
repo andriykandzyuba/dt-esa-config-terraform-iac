@@ -132,6 +132,7 @@ jobs:
         id: plan
         run: |
           terraform plan -out=tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
@@ -149,3 +150,4 @@ jobs:
         id: apply
         if: steps.plan.outcome == 'success'
         run: terraform apply -auto-approve
+        working-directory: ${{ env.TF_WORKING_DIR }}
