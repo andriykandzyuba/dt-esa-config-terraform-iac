@@ -27,7 +27,7 @@ jobs:
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: modules/dynatrace_api_token
+      TF_WORKING_DIR: environments/${{ inputs.environment }}/security
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -47,13 +47,68 @@ jobs:
         with:
           terraform_version: "~1.9"
 
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "$TF_WORKING_DIR"
+          ls -la "$TF_WORKING_DIR"
+
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > ./__providers__.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.91.1"
+              }
+            }
+            backend "azurerm" {}
+          }
+          EOF
+          cat <<EOF > ./main.tf
+          # environments/dev/main.tf
+          module "dynatrace_api_token" {
+            # Path to your local module folder
+            source = "../../../modules/dynatrace_api_token"
+            dt_esa_api_token_name = var.dt_esa_api_token_name
+            dt_esa_api_token_scope = var.dt_esa_api_token_scope
+          }
+          cat <<EOF > ./variables.tf
+          variable "dt_esa_api_token_name" {
+          description = "Name of the Dynatrace API Token. The default value is set to 'Dynatrace API Token'."
+            type = string
+            default = "Dynatrace Terraform API Token"
+          }
+          
+          variable "dt_esa_api_token_scope" {
+            description = "Dynatrace API Token scopes."
+            type = list(string)
+            default = [
+              "settings.read", "settings.write",
+              "ReadConfig", "WriteConfig",
+              "CaptureRequestData",
+              "ExternalSyntheticIntegration",
+              "activeGateTokenManagement.create", "activeGateTokenManagement.read", "activeGateTokenManagement.write",
+              "apiTokens.read", "apiTokens.write",
+              "attacks.read", "attacks.write",
+              "credentialVault.read", "credentialVault.write",
+              "entities.read",
+              "extensions.write",
+              "extensionEnvironment.read", "extensionEnvironment.write",
+              "networkZones.read", "networkZones.write",
+              "securityProblems.read", "securityProblems.write",
+              "slo.read", "slo.write"
+            ]
+          }
+          EOF
+          ls -las .
+
       - name: 'Terraform Init'
         id: init
         # -backend-config flags inject the Azure Blob Storage coordinates at
         # runtime so no values are hard-coded in .tf files. The state key is
         # namespaced per environment (e.g. dev/terraform.tfstate).
         run: |
-          export TF_LOG=TRACE
           terraform init -input=false \
             -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
             -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
@@ -75,7 +130,7 @@ jobs:
       - name: 'Terraform Plan'
         id: plan
         run: |
-          terraform plan -out=tfplan -input=false
+          terraform plan -out=tfplan
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
