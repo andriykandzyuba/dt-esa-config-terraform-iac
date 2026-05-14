@@ -60,6 +60,7 @@ jobs:
             backend "azurerm" {}
           }
           EOF
+          
           cat <<EOF > ./main.tf
           # environments/dev/main.tf
           module "dynatrace_api_token" {
@@ -68,6 +69,8 @@ jobs:
             dt_esa_api_token_name = var.dt_esa_api_token_name
             dt_esa_api_token_scope = var.dt_esa_api_token_scope
           }
+          EOF
+          
           cat <<EOF > ./variables.tf
           variable "dt_esa_api_token_name" {
           description = "Name of the Dynatrace API Token. The default value is set to 'Dynatrace API Token'."
@@ -96,6 +99,7 @@ jobs:
             ]
           }
           EOF
+          
           ls -las .
         working-directory: ${{ env.TF_WORKING_DIR }}
 
