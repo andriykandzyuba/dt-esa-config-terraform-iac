@@ -42,6 +42,10 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
+      - name: 'Make directory for extraction'
+        run: |
+          mkdir -p ${{ env.TF_WORKING_DIR }}
+
       - name: 'Terraform Setup'
         uses: hashicorp/setup-terraform@v3
         with:
