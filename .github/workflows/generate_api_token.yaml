@@ -99,8 +99,6 @@ jobs:
             ]
           }
           EOF
-          
-          ls -las .
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Init'

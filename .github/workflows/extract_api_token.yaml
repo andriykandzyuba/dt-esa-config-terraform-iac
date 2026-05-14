@@ -32,13 +32,9 @@ jobs:
       # GitHub environment (dev / staging / prod).
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: modules/dynatrace_api_token
+      TF_WORKING_DIR: environments/${{ inputs.environment }}/security
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
-
-    defaults:
-      run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
 
     outputs:
       # Map the job output name 'output1' to the step output 'test'
@@ -53,6 +49,25 @@ jobs:
         with:
           terraform_version: "~1.9"
 
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "$TF_WORKING_DIR"
+
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > ./__providers__.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.91.1"
+              }
+            }
+            backend "azurerm" {}
+          }
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
       - name: 'Terraform Init'
         id: init
         # -backend-config flags inject the Azure Blob Storage coordinates at
@@ -66,10 +81,12 @@ jobs:
             -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.environment }}
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Validate'
         id: validate
         run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       # --------------------------------------------------------------
       # Terraform Extract Token
@@ -81,3 +98,4 @@ jobs:
           # Extract the API token value from Terraform output and set it as an output variable
           GENETATED_API_TOKEN=$(terraform state pull | jq -r '.resources.[0].instances.[0].attributes.token')
           echo "access_token=${GENETATED_API_TOKEN}" >> $GITHUB_OUTPUT
+        working-directory: ${{ env.TF_WORKING_DIR }}
