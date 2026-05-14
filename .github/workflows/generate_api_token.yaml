@@ -34,9 +34,9 @@ jobs:
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
 
-    defaults:
-      run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
+    #defaults:
+    #  run:
+    #    working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
       - name: 'Checkout repository'
