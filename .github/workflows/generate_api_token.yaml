@@ -97,7 +97,7 @@ jobs:
           }
           EOF
           ls -las .
-        working-directory: $TF_WORKING_DIR
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Init'
         id: init
@@ -112,7 +112,7 @@ jobs:
             -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.environment }}
-        working-directory: $TF_WORKING_DIR
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Validate'
         id: validate
