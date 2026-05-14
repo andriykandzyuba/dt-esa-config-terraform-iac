@@ -94,7 +94,8 @@ jobs:
       environment: ${{ github.event.inputs.source_environment }}
       dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
-      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
+      tf_backend_storage_account: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_storage_account }}
+      tf_backend_container: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_container }}
     secrets: inherit
 
   upload_to_azure:
