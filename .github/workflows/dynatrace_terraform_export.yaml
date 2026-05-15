@@ -78,6 +78,7 @@ jobs:
       - name: 'Create working directory'
         run: |
           mkdir -p "$TF_WORKING_DIR"
+          mkdir -p "DYNATRACE_TARGET_FOLDER"
 
       - name: 'Create Terraform providers configuration'
         run: |
