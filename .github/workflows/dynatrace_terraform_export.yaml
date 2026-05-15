@@ -116,7 +116,7 @@ jobs:
         if: steps.validate.outcome == 'success'
         run: |
           ls -las .
-          cat <<EOF > $DYNATRACE_TARGET_FOLDER/test.txt
+          cat <<EOF > export/data/test.txt
             This is a placeholder for the actual export command.
           EOF
         #  .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
@@ -127,9 +127,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/export/data/**
+          path: export/data/**
           include-hidden-files: true
           retention-days: 1
+          working-directory: ${{ env.TF_WORKING_DIR }}
 
   call_delete_dynatrace_api_token:
     name: "Call Delete API Token Workflow for environment: [${{ inputs.environment }}]"
