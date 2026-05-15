@@ -63,7 +63,6 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-      DYNATRACE_TARGET_FOLDER: environments/${{ inputs.environment }}/iac/export/data
 
     steps:
       - name: 'Checkout repository'
@@ -76,7 +75,7 @@ jobs:
 
       - name: 'Create working directories'
         run: |
-          mkdir -p "$DYNATRACE_TARGET_FOLDER"
+          mkdir -p "$TF_WORKING_DIR"
 
       - name: 'Create Terraform providers configuration'
         run: |
@@ -115,8 +114,6 @@ jobs:
         id: export_configuration
         if: steps.validate.outcome == 'success'
         run: |
-          pwd
-          env
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -126,18 +123,13 @@ jobs:
           pwd
           env
           ls -las .
-          ls -las environments
-          ls -las environments/${{ inputs.environment }}
-          ls -las environments/${{ inputs.environment }}/iac
-          ls -las environments/${{ inputs.environment }}/iac/export
-          ls -las environments/${{ inputs.environment }}/iac/export/data
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.TF_WORKING_DIR }}/export/data/**
+          path: ${{ env.TF_WORKING_DIR }}/**
           include-hidden-files: true
           retention-days: 1
 
