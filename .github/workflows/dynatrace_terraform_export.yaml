@@ -115,14 +115,16 @@ jobs:
         id: export_configuration
         if: steps.validate.outcome == 'success'
         run: |
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
-            -export -ref -id
+        # .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+        #    -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
 
       - name: 'Debug the exported configuration'
         run: |
           pwd
+          ls -las export
+          ls -las export/data
         #  echo "Exported Terraform Configuration:"
         #  ls -lsa export/data/**
         working-directory: ${{ env.TF_WORKING_DIR }}
