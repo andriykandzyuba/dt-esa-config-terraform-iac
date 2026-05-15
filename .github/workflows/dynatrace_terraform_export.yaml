@@ -12,7 +12,10 @@ on:
       dir_artifact_name:
         required: true
         type: string
-      target_folder:
+      tf_backend_storage_account:
+        required: true
+        type: string
+      tf_backend_container:
         required: true
         type: string
 
@@ -50,7 +53,7 @@ jobs:
       # GitHub automatically provides a GITHUB_TOKEN secret to authenticate API requests made by the workflow.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Set the working directory for Terraform commands based on the selected environment.
-      TF_WORKING_DIR: ${{ inputs.target_folder }}
+      TF_WORKING_DIR: environments/${{ inputs.environment }}/iac
       # Azure Service Principal credentials — stored as secrets in each
       ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
       # Dynatrace environment URL and API token — also stored as secrets in GitHub environments.
@@ -60,17 +63,19 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-      # Dynatrace Terraform Provider CLI
-      DYNATRACE_TARGET_FOLDER: ${{ inputs.target_folder }}/export/data
 
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: 'Create working directory'
+      - name: 'Terraform Setup for IaC'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+
+      - name: 'Create working directories'
         run: |
           mkdir -p "$TF_WORKING_DIR"
-          ls -la "$TF_WORKING_DIR"
 
       - name: 'Create Terraform providers configuration'
         run: |
@@ -82,26 +87,28 @@ jobs:
                 version = "1.91.1"
               }
             }
+            backend "azurerm" {}
           }
           EOF
-          ls -las .
-
-      - name: 'Terraform Setup for IaC'
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~1.9"
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Init for Dynatrace Export'
         id: init
         run: |
-          terraform init -input=false
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.environment }}
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Validate'
         id: validate
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Configuration Export'
         id: export_configuration
@@ -109,12 +116,13 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/**
+          path: ${{ env.TF_WORKING_DIR }}/configuration/**
           include-hidden-files: true
           retention-days: 1
 

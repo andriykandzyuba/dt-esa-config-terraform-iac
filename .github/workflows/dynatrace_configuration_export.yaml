@@ -53,7 +53,7 @@ jobs:
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/${{ github.event.inputs.format }}
+      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/data
       DIR_ARTIFACT_NAME: export-dir-artifact
 
     outputs:
@@ -94,14 +94,14 @@ jobs:
       environment: ${{ github.event.inputs.source_environment }}
       dynatrace_env_url: ${{ needs.dynatrace_export_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
-      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
+      tf_backend_storage_account: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_storage_account }}
+      tf_backend_container: ${{ needs.dynatrace_export_configuration.outputs.tf_backend_container }}
     secrets: inherit
 
   upload_to_azure:
     needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/azure_blob_upload.yaml
     if: always() && (github.event.inputs.storage == 'azure-blob') && contains(needs.*.result, 'success')
-    ##if: ${{ github.event.inputs.storage == 'azure-blob' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
@@ -116,7 +116,6 @@ jobs:
     needs: [export_with_monaco, export_with_terraform, dynatrace_export_configuration]
     uses: ./.github/workflows/github_repo_upload.yaml
     if: always() && (github.event.inputs.storage == 'github-repo') && contains(needs.*.result, 'success')
-    ##if: ${{ github.event.inputs.storage == 'github-repo' }}
     with:
       environment: ${{ github.event.inputs.source_environment }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}

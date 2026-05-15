@@ -1,0 +1,75 @@
+name: "GitHub Repository Download"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      target_folder:
+        required: true
+        type: string
+      dir_artifact_name:
+        required: true
+        type: string
+      gh_branch_name:
+        required: true
+        type: string
+      gh_repo_name:
+        required: true
+        type: string
+      gh_repo_owner:
+        required: true
+        type: string
+
+jobs:
+  github_upload:
+    runs-on: ubuntu-latest
+
+    environment: ${{ inputs.environment }}
+
+    env:
+      REPO_NAME: ${{ inputs.gh_repo_name }}
+      REPO_OWNER: ${{ inputs.gh_repo_owner }}
+      BRANCH_NAME: ${{ inputs.gh_branch_name }}
+      GH_TOKEN: ${{ secrets.EXTERNAL_REPO_PAT }}
+
+    steps:
+      - name: 'Make directory for extraction'
+        run: |
+          mkdir -p ${{ inputs.target_folder }}
+
+      - name: 'Verify token passed through'
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_TOKEN is EMPTY — secret not passed from caller"
+            exit 1
+          fi
+          echo "GH_TOKEN length: ${#GH_TOKEN}"
+
+      - name: 'Clone external repository'
+        run: |
+          # GH_TOKEN is in env, so gh uses it automatically
+          gh repo clone ${REPO_OWNER}/${REPO_NAME} ${{ inputs.target_folder }}
+          cd "${{ inputs.target_folder }}"
+          gh auth setup-git
+
+          if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
+            git checkout "${BRANCH_NAME}"
+            git pull origin "${BRANCH_NAME}"
+          else
+            printf "Branch '%s' does not exist. Creating new branch.\n" "${BRANCH_NAME}"
+            exit 1
+          fi
+
+      - name: 'Clone external repository'
+        run: |
+          ls -las ${{ inputs.target_folder }}
+
+      - name: 'Upload directory as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.dir_artifact_name }}
+          path: ${{ inputs.target_folder }}
+          include-hidden-files: true
+          retention-days: 1

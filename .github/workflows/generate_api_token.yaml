@@ -34,10 +34,6 @@ jobs:
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
 
-    defaults:
-      run:
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
@@ -46,6 +42,64 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~1.9"
+
+      - name: 'Create working directory'
+        run: |
+          mkdir -p "$TF_WORKING_DIR"
+
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > ./__providers__.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.91.1"
+              }
+            }
+            backend "azurerm" {}
+          }
+          EOF
+          
+          cat <<EOF > ./main.tf
+          # environments/dev/main.tf
+          module "dynatrace_api_token" {
+            # Path to your local module folder
+            source = "../../../modules/dynatrace_api_token"
+            dt_esa_api_token_name = var.dt_esa_api_token_name
+            dt_esa_api_token_scope = var.dt_esa_api_token_scope
+          }
+          EOF
+          
+          cat <<EOF > ./variables.tf
+          variable "dt_esa_api_token_name" {
+          description = "Name of the Dynatrace API Token. The default value is set to 'Dynatrace API Token'."
+            type = string
+            default = "Dynatrace Terraform API Token"
+          }
+          
+          variable "dt_esa_api_token_scope" {
+            description = "Dynatrace API Token scopes."
+            type = list(string)
+            default = [
+              "settings.read", "settings.write",
+              "ReadConfig", "WriteConfig",
+              "CaptureRequestData",
+              "ExternalSyntheticIntegration",
+              "activeGateTokenManagement.create", "activeGateTokenManagement.read", "activeGateTokenManagement.write",
+              "apiTokens.read", "apiTokens.write",
+              "attacks.read", "attacks.write",
+              "credentialVault.read", "credentialVault.write",
+              "entities.read",
+              "extensions.write",
+              "extensionEnvironment.read", "extensionEnvironment.write",
+              "networkZones.read", "networkZones.write",
+              "securityProblems.read", "securityProblems.write",
+              "slo.read", "slo.write"
+            ]
+          }
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Init'
         id: init
@@ -60,6 +114,7 @@ jobs:
             -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.environment }}
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Terraform Validate'
         id: validate
@@ -75,6 +130,7 @@ jobs:
         id: plan
         run: |
           terraform plan -out=tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
@@ -83,6 +139,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
       # --------------------------------------------------------------
       # Terraform Apply
@@ -92,3 +149,4 @@ jobs:
         id: apply
         if: steps.plan.outcome == 'success'
         run: terraform apply -auto-approve
+        working-directory: ${{ env.TF_WORKING_DIR }}
