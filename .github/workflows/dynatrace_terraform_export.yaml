@@ -64,6 +64,7 @@ jobs:
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Terraform Provider CLI
+      DYNATRACE_TARGET_FOLDER: environments/${{ inputs.environment }}/iac
 
     steps:
       - name: 'Checkout repository'
@@ -96,13 +97,11 @@ jobs:
       - name: 'Terraform Init for Dynatrace Export'
         id: init
         run: |
-          pwd
-          env
-     #     terraform init -input=false \
-     #       -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
-     #       -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
-     #       -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
-     #       -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.environment }}
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -117,8 +116,11 @@ jobs:
         id: export_configuration
         if: steps.validate.outcome == 'success'
         run: |
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
-            -export -ref -id
+          pwd
+          env
+          ls -las .
+        #  .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+        #    -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Debug directory content after export'
@@ -132,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.TF_WORKING_DIR }}/**
+          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/**
           include-hidden-files: true
           retention-days: 1
 
