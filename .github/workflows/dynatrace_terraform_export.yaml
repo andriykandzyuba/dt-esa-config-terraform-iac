@@ -118,8 +118,14 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
-          ls -las $DYNATRACE_TARGET_FOLDER
         working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: 'Debug directory content after export'
+        run: |
+          echo "Contents of $TF_WORKING_DIR after export:"
+          ls -la "$TF_WORKING_DIR"
+          echo "Contents of export folder:"
+          ls -la "$DYNATRACE_TARGET_FOLDER"
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
