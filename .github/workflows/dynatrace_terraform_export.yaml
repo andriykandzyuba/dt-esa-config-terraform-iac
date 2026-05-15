@@ -122,6 +122,7 @@ jobs:
 
       - name: 'Debug the exported configuration'
         run: |
+          pwd
           echo "Exported Terraform Configuration:"
           ls -lsa export/data/**
         working-directory: ${{ env.TF_WORKING_DIR }}
