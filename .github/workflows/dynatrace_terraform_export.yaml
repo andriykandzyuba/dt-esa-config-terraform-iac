@@ -122,6 +122,7 @@ jobs:
       - name: 'Debug the exported configuration'
         run: |
           pwd
+          ls -las .
           ls -las export
           ls -las export/data
         working-directory: ${{ env.TF_WORKING_DIR }}
