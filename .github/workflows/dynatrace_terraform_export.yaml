@@ -124,7 +124,9 @@ jobs:
           pwd
           env
           ls -las .
-          ls -las export
+          ls -las environments
+          ls -las environments/${{ inputs.environment }}
+          ls -las environments/${{ inputs.environment }}/iac
           ls -las export/data
         working-directory: ${{ env.TF_WORKING_DIR }}
 
