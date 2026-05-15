@@ -64,7 +64,7 @@ jobs:
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Terraform Provider CLI
-      DYNATRACE_TARGET_FOLDER: ${{ env.TF_WORKING_DIR }}/export/data
+      DYNATRACE_TARGET_FOLDER: $TF_WORKING_DIR/export/data
 
     steps:
       - name: 'Checkout repository'
