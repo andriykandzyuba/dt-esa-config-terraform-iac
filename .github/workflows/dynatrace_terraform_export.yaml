@@ -122,7 +122,7 @@ jobs:
         run: |
           pwd
           env
-          ls -las .
+          ls -las ./configuration
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Upload directory as artifact'
