@@ -63,6 +63,7 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
+      DYNATRACE_TARGET_FOLDER: environments/${{ inputs.environment }}/iac/export/data
 
     steps:
       - name: 'Checkout repository'
@@ -73,9 +74,9 @@ jobs:
         with:
           terraform_version: "~1.9"
 
-      - name: 'Create working directory'
+      - name: 'Create working directories'
         run: |
-          mkdir -p "$TF_WORKING_DIR"
+          mkdir -p "$DYNATRACE_TARGET_FOLDER"
 
       - name: 'Create Terraform providers configuration'
         run: |
@@ -114,24 +115,19 @@ jobs:
         id: export_configuration
         if: steps.validate.outcome == 'success'
         run: |
-          mkdir -p export/data
-          DYNATRACE_TARGET_FOLDER="$PWD/export/data"
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
-            -export -ref -id
+          ls -las .
+          cat <<EOF > $DYNATRACE_TARGET_FOLDER/test.txt
+            This is a placeholder for the actual export command.
+          EOF
+        #  .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+        #    -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
-
-      - name: 'Debug directory content after export'
-        run: |
-          echo "Contents of $TF_WORKING_DIR after export:"
-          ls -la "$TF_WORKING_DIR"
-          echo "Contents of export folder:"
-          ls -la "$DYNATRACE_TARGET_FOLDER"
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.TF_WORKING_DIR }}/export/data/**
+          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/export/data/**
           include-hidden-files: true
           retention-days: 1
 
