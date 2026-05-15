@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.TF_WORKING_DIR }}/**
+          path: ${{ env.TF_WORKING_DIR }}/configuration/**
           include-hidden-files: true
           retention-days: 1
 
