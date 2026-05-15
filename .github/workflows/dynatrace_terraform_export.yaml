@@ -64,7 +64,7 @@ jobs:
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
       # Dynatrace Terraform Provider CLI
-      DYNATRACE_TARGET_FOLDER: $TF_WORKING_DIR/export/data
+      DYNATRACE_TARGET_FOLDER: environments/${{ inputs.environment }}/iac/export/data
 
     steps:
       - name: 'Checkout repository'
@@ -118,6 +118,7 @@ jobs:
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
+          ls -las $DYNATRACE_TARGET_FOLDER
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Upload directory as artifact'
