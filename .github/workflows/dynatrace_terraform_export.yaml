@@ -122,6 +122,7 @@ jobs:
       - name: 'Debug the exported configuration'
         run: |
           pwd
+          env
           ls -las .
           ls -las export
           ls -las export/data
