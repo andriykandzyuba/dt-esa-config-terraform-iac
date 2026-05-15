@@ -129,7 +129,8 @@ jobs:
           ls -las environments
           ls -las environments/${{ inputs.environment }}
           ls -las environments/${{ inputs.environment }}/iac
-          ls -las export/data
+          ls -las environments/${{ inputs.environment }}/iac/export
+          ls -las environments/${{ inputs.environment }}/iac/export/data
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Upload directory as artifact'
