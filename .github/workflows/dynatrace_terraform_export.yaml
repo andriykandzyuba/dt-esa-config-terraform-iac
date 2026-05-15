@@ -119,6 +119,7 @@ jobs:
           cat <<EOF > export/data/test.txt
             This is a placeholder for the actual export command.
           EOF
+          ls -las export/data
         #  .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
         #    -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
