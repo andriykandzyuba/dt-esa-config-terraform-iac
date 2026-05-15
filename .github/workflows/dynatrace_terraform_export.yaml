@@ -118,13 +118,6 @@ jobs:
             -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: 'Debug the exported configuration'
-        run: |
-          pwd
-          env
-          ls -las ./configuration
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
