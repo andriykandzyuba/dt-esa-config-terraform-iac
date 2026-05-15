@@ -63,8 +63,6 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
-      # Dynatrace Terraform Provider CLI
-      DYNATRACE_TARGET_FOLDER: environments/${{ inputs.environment }}/iac
 
     steps:
       - name: 'Checkout repository'
@@ -116,11 +114,10 @@ jobs:
         id: export_configuration
         if: steps.validate.outcome == 'success'
         run: |
-          pwd
-          env
-          ls -las .
-        #  .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
-        #    -export -ref -id
+          mkdir -p export/data
+          DYNATRACE_TARGET_FOLDER="$PWD/export/data"
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+            -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: 'Debug directory content after export'
@@ -134,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.dir_artifact_name }}
-          path: ${{ env.DYNATRACE_TARGET_FOLDER }}/**
+          path: ${{ env.TF_WORKING_DIR }}/export/data/**
           include-hidden-files: true
           retention-days: 1
 
