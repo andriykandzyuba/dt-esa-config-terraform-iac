@@ -118,7 +118,6 @@ jobs:
     if: always() && (github.event.inputs.storage == 'github-repo') && contains(needs.*.result, 'success')
     with:
       environment: ${{ github.event.inputs.source_environment }}
-      target_folder: ${{ needs.dynatrace_export_configuration.outputs.target_folder }}
       dir_artifact_name: ${{ needs.dynatrace_export_configuration.outputs.dir_artifact_name }}
       gh_repo_owner: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_owner }}
       gh_repo_name: ${{ needs.dynatrace_export_configuration.outputs.gh_repo_name }}
