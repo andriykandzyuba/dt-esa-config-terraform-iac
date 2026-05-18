@@ -106,7 +106,7 @@ jobs:
 
       - name: 'Configuration Export'
         id: export_configuration
-        if: steps.validate.outcome == 'success'
+        if: steps.init.outcome == 'success'
         run: |
           .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
             -export -ref -id
@@ -114,7 +114,7 @@ jobs:
 
       - name: 'Terraform Validate'
         id: validate
-        if: steps.init.outcome == 'success'
+        if: steps.export_configuration.outcome == 'success'
         run: terraform validate -no-color
         working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
 
