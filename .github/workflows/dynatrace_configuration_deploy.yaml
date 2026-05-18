@@ -146,6 +146,7 @@ jobs:
     with:
       target_environment: ${{ github.event.inputs.target_environment }}
       action: ${{ github.event.inputs.action }}
+      target_folder: ${{ needs.dynatrace_deploy_configuration.outputs.target_folder }}
       dynatrace_env_url: ${{ needs.dynatrace_deploy_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
       tf_backend_storage_account: ${{ needs.dynatrace_deploy_configuration.outputs.tf_backend_storage_account }}
