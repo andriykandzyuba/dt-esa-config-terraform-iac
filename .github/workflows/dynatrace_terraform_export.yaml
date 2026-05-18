@@ -120,6 +120,7 @@ jobs:
 
       - name: 'Create Terraform providers configuration'
         run: |
+          rm -f ___providers___.tf
           cat <<EOF > ./__providers__.tf
           terraform {
             required_providers {
