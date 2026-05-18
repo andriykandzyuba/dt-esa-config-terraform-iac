@@ -6,6 +6,9 @@ on:
       target_environment:
         required: true
         type: string
+      target_folder:
+        required: true
+        type: string
       action:
         required: true
         type: string
@@ -66,19 +69,11 @@ jobs:
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
+      TARGET_FOLDER:  ${{ inputs.target_folder }}
 
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4
-
-      - name: 'Terraform Setup for IaC'
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~1.9"
-
-      - name: 'Create working directories'
-        run: |
-          mkdir -p "$TF_WORKING_DIR"
 
       - name: 'Download directory artifact'
         uses: actions/download-artifact@v4
@@ -88,7 +83,12 @@ jobs:
 
       - name: 'List directory contents for verification'
         run: |
-          ls -lsa "$TF_WORKING_DIR"
+          ls -lsa "$TARGET_FOLDER"
+
+      - name: 'Terraform Setup for IaC'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
 
       - name: 'Terraform Init for Dynatrace Export'
         id: init
@@ -100,13 +100,13 @@ jobs:
             -backend-config="key=$TF_WORKING_DIR/terraform.tfstate"
         env:
           TF_VAR_environment: ${{ inputs.target_environment }}
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.TARGET_FOLDER }}
 
       - name: 'Terraform Validate'
         id: validate
         if: steps.init.outcome == 'success'
         run: terraform validate -no-color
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.TARGET_FOLDER }}
 
       # --------------------------------------------------------------
       # Terraform Plan
@@ -119,7 +119,7 @@ jobs:
         if: inputs.action == 'dry-run' || inputs.action == 'deploy'
         run: |
           terraform plan -out=tfplan
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.TARGET_FOLDER }}
 
       # Post plan output as a PR comment (optional but useful)
       - name: 'Post Plan to Summary'
@@ -129,7 +129,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.TARGET_FOLDER }}
 
       # --------------------------------------------------------------
       # Terraform Apply
@@ -139,7 +139,7 @@ jobs:
         id: apply
         if: inputs.action == 'deploy' && inputs.action == 'success'
         run: terraform apply -auto-approve
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.TARGET_FOLDER }}
 
   call_delete_dynatrace_api_token:
     name: "Call Delete API Token Workflow for environment: [${{ inputs.target_environment }}]"
