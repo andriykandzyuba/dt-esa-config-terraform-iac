@@ -50,6 +50,10 @@ jobs:
           name: ${{ inputs.dir_artifact_name }}
           path: ${{ env.TARGET_FOLDER }}
 
+      - name: 'Replace DYNATRACE_ENV_URL placeholder in Monaco configuration files'
+        run: |
+         find ${{ env.TARGET_FOLDER }} -type f -name "manifest-projects.yaml" -exec sed -i "s|DYNATRACE_ENV_URL|${{ env.DYNATRACE_ENV_URL }}|g" {} \;
+
       - name: 'Display manifest-projects content for debugging'
         run: |
           cat ${{ env.TARGET_FOLDER }}/manifest-projects.yaml
