@@ -148,7 +148,6 @@ jobs:
       action: ${{ github.event.inputs.action }}
       dynatrace_env_url: ${{ needs.dynatrace_deploy_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
-      target_folder: ${{ needs.dynatrace_deploy_configuration.outputs.target_folder }}
       tf_backend_storage_account: ${{ needs.dynatrace_deploy_configuration.outputs.tf_backend_storage_account }}
       tf_backend_container: ${{ needs.dynatrace_deploy_configuration.outputs.tf_backend_container }}
     secrets: inherit
