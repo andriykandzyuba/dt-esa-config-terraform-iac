@@ -146,7 +146,7 @@ jobs:
   call_delete_dynatrace_api_token:
     name: "Call Delete API Token Workflow for environment: [${{ inputs.environment }}]"
     uses: ./.github/workflows/delete_api_token.yaml
-    needs: dynatrace_export_configuration
+    needs: dynatrace_deploy_configuration
     if: always()
     secrets: inherit
     with:
