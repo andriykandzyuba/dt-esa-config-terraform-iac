@@ -144,7 +144,7 @@ jobs:
       github.event.inputs.format == 'terraform' &&
       (needs.download_from_azure.result == 'success' || needs.checkout_from_github.result == 'success')
     with:
-      environment: ${{ github.event.inputs.target_environment }}
+      target_environment: ${{ github.event.inputs.target_environment }}
       action: ${{ github.event.inputs.action }}
       dynatrace_env_url: ${{ needs.dynatrace_deploy_configuration.outputs.dynatrace_env_url }}
       dir_artifact_name: ${{ needs.dynatrace_deploy_configuration.outputs.dir_artifact_name }}
