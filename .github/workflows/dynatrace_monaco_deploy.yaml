@@ -50,9 +50,9 @@ jobs:
           name: ${{ inputs.dir_artifact_name }}
           path: ${{ env.TARGET_FOLDER }}
 
-      - name: 'List downloaded files'
+      - name: 'Display manifest-projects content for debugging'
         run: |
-          ls -lsa $TARGET_FOLDER
+          cat ${{ env.TARGET_FOLDER }}/manifest-projects.yaml
 
       - name: 'Exclude Default Dynatrace Dashboards from Deployment'
         run: |
