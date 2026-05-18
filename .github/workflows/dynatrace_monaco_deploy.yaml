@@ -81,11 +81,3 @@ jobs:
           ls -las ./project
           monaco deploy manifest-projects.yaml --continue-on-error --project project
         working-directory: ${{ env.TARGET_FOLDER }}
-
-      - name: 'Dynatrace Monaco Projects Delete'
-        if: ${{ inputs.action == 'delete' }}
-        run: |
-          monaco generate deletefile manifest-projects.yaml --project project
-          cat delete.yaml
-          monaco delete --manifest manifest-projects.yaml --file delete.yaml
-        working-directory: ${{ env.TARGET_FOLDER }}
