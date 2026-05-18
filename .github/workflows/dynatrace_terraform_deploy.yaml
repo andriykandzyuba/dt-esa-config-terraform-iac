@@ -80,20 +80,15 @@ jobs:
         run: |
           mkdir -p "$TF_WORKING_DIR"
 
-      - name: 'Create Terraform providers configuration'
+      - name: 'Download directory artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.dir_artifact_name }}
+          path: ${{ env.TARGET_FOLDER }}
+
+      - name: 'List directory contents for verification'
         run: |
-          cat <<EOF > ./__providers__.tf
-          terraform {
-            required_providers {
-              dynatrace = {
-                source = "dynatrace-oss/dynatrace"
-                version = "1.91.1"
-              }
-            }
-            backend "azurerm" {}
-          }
-          EOF
-        working-directory: ${{ env.TF_WORKING_DIR }}
+          ls -lsa "$TF_WORKING_DIR"
 
       - name: 'Terraform Init for Dynatrace Export'
         id: init
