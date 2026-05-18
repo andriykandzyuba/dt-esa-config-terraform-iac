@@ -84,7 +84,7 @@ jobs:
             required_providers {
               dynatrace = {
                 source = "dynatrace-oss/dynatrace"
-                version = "1.91.1"
+                version = "1.96.0"
               }
             }
             backend "azurerm" {}
@@ -104,12 +104,6 @@ jobs:
           TF_VAR_environment: ${{ inputs.environment }}
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: 'Terraform Validate'
-        id: validate
-        if: steps.init.outcome == 'success'
-        run: terraform validate -no-color
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
       - name: 'Configuration Export'
         id: export_configuration
         if: steps.validate.outcome == 'success'
@@ -118,21 +112,11 @@ jobs:
             -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: 'Create Terraform providers configuration'
-        run: |
-          rm -f ___providers___.tf
-          cat <<EOF > ./__providers__.tf
-          terraform {
-            required_providers {
-              dynatrace = {
-                source = "dynatrace-oss/dynatrace"
-                version = "1.91.1"
-              }
-            }
-            backend "azurerm" {}
-          }
-          EOF
-        working-directory: ${{ env.TF_WORKING_DIR }}/configuration
+      - name: 'Terraform Validate'
+        id: validate
+        if: steps.init.outcome == 'success'
+        run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
