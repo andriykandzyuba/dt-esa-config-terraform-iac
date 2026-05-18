@@ -108,7 +108,7 @@ jobs:
         id: export_configuration
         if: steps.init.outcome == 'success'
         run: |
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.96.0/linux_amd64/terraform-provider-dynatrace_v1.96.0 \
             -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
 
