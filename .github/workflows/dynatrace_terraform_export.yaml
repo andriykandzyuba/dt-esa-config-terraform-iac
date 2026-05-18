@@ -131,7 +131,7 @@ jobs:
             backend "azurerm" {}
           }
           EOF
-        working-directory: ${{ env.TF_WORKING_DIR }}/configuration/**
+        working-directory: ${{ env.TF_WORKING_DIR }}/configuration
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
