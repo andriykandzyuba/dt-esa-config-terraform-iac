@@ -3,12 +3,6 @@ name: "Dynatrace Monaco Provider Deploy"
 on:
   workflow_call:
     inputs:
-      environment:
-        required: true
-        type: string
-      source_environment:
-        required: true
-        type: string
       target_environment:
         required: true
         type: string
