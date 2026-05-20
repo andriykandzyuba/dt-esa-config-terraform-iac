@@ -3,12 +3,6 @@ name: "Dynatrace Monaco Provider Deploy"
 on:
   workflow_call:
     inputs:
-      environment:
-        required: true
-        type: string
-      source_environment:
-        required: true
-        type: string
       target_environment:
         required: true
         type: string
@@ -50,9 +44,13 @@ jobs:
           name: ${{ inputs.dir_artifact_name }}
           path: ${{ env.TARGET_FOLDER }}
 
-      - name: 'List downloaded files'
+      - name: 'Replace DYNATRACE_ENV_URL placeholder in Monaco configuration files'
         run: |
-          ls -lsa $TARGET_FOLDER
+         find ${{ env.TARGET_FOLDER }} -type f -name "manifest-projects.yaml" -exec sed -i "s|DYNATRACE_ENV_URL|${{ env.DYNATRACE_ENV_URL }}|g" {} \;
+
+      - name: 'Display manifest-projects content for debugging'
+        run: |
+          cat ${{ env.TARGET_FOLDER }}/manifest-projects.yaml
 
       - name: 'Exclude Default Dynatrace Dashboards from Deployment'
         run: |
@@ -82,12 +80,4 @@ jobs:
         run: |
           ls -las ./project
           monaco deploy manifest-projects.yaml --continue-on-error --project project
-        working-directory: ${{ env.TARGET_FOLDER }}
-
-      - name: 'Dynatrace Monaco Projects Delete'
-        if: ${{ inputs.action == 'delete' }}
-        run: |
-          monaco generate deletefile manifest-projects.yaml --project project
-          cat delete.yaml
-          monaco delete --manifest manifest-projects.yaml --file delete.yaml
         working-directory: ${{ env.TARGET_FOLDER }}

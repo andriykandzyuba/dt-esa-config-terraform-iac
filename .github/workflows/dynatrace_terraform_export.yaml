@@ -84,7 +84,7 @@ jobs:
             required_providers {
               dynatrace = {
                 source = "dynatrace-oss/dynatrace"
-                version = "1.91.1"
+                version = "1.96.0"
               }
             }
             backend "azurerm" {}
@@ -104,19 +104,25 @@ jobs:
           TF_VAR_environment: ${{ inputs.environment }}
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: 'Terraform Validate'
-        id: validate
-        if: steps.init.outcome == 'success'
-        run: terraform validate -no-color
-        working-directory: ${{ env.TF_WORKING_DIR }}
-
       - name: 'Configuration Export'
         id: export_configuration
-        if: steps.validate.outcome == 'success'
+        if: steps.init.outcome == 'success'
         run: |
-          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.91.1/linux_amd64/terraform-provider-dynatrace_v1.91.1 \
+          .terraform/providers/registry.terraform.io/dynatrace-oss/dynatrace/1.96.0/linux_amd64/terraform-provider-dynatrace_v1.96.0 \
             -export -ref -id
         working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: 'Run the fix for Terraform Exported Configuration'
+        run: |
+          cp scripts/terraform/fix_network_monitor.js ${{ env.TF_WORKING_DIR }}/configuration
+          cd ${{ env.TF_WORKING_DIR }}/configuration
+          node fix_network_monitor.js
+
+      - name: 'Terraform Validate'
+        id: validate
+        if: steps.export_configuration.outcome == 'success'
+        run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
