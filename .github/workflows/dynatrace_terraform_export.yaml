@@ -114,7 +114,7 @@ jobs:
 
       - name: 'Run the fix for Terraform Exported Configuration'
         run: |
-          cp scrippts/terraform_export/fix_network_monitor.js ${{ env.TF_WORKING_DIR }}/configuration
+          cp scripts/terraform_export/fix_network_monitor.js ${{ env.TF_WORKING_DIR }}/configuration
           cd ${{ env.TF_WORKING_DIR }}/configuration
           node fix_network_monitor.js
 
