@@ -114,15 +114,15 @@ jobs:
 
       - name: 'Run the fix for Terraform Exported Configuration'
         run: |
-          cp scripts/terraform/fix_network_monitor.js ${{ env.TF_WORKING_DIR }}/configuration
+          cp scripts/terraform/fix_terraform.js ${{ env.TF_WORKING_DIR }}/configuration
           cd ${{ env.TF_WORKING_DIR }}/configuration
-          node fix_network_monitor.js
+          node fix_terraform.js
 
-      #- name: 'Terraform Validate'
-      #  id: validate
-      #  if: steps.export_configuration.outcome == 'success'
-      #  run: terraform validate -no-color
-      #  working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
+      - name: 'Terraform Validate'
+        id: validate
+        if: steps.export_configuration.outcome == 'success'
+        run: terraform validate -no-color
+        working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
 
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
