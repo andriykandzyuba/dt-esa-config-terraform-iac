@@ -67,7 +67,7 @@ jobs:
           .terraform.lock.hcl
           fix_terraform.js
           EOF
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.REPO_NAME }}
 
       - name: 'Commit and push changes'
         working-directory: ${{ env.REPO_NAME }}
