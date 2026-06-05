@@ -9,12 +9,7 @@ on:
         type: choice
         options:
           - yhu28601
-          - val72867
-          - vtq72629
-          - avc65257
-          - jqa38275
-          - rwb66447
-          - yyo96051
+          - hia75022
         default: yhu28601
       target_environment:
         description: "Target Dynatrace environment"
@@ -22,13 +17,7 @@ on:
         type: choice
         options:
           - nyw40909
-          - bkh87134
-          - zpa13569
-          - bse40162
-          - jkf42365
-          - tqe98595
-          - sxd52035
-          - sby39331
+          - peb12847
         default: nyw40909
       format:
         description: "Export format"
