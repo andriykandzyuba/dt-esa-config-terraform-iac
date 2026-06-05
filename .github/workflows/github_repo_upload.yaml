@@ -59,6 +59,16 @@ jobs:
           name: ${{ inputs.dir_artifact_name }}
           path: ${{ env.REPO_NAME }}/
 
+      - name: 'Create Terraform providers configuration'
+        run: |
+          cat <<EOF > .gitignore
+          # Ignore generated and utility files
+          .terraform/
+          .terraform.lock.hcl
+          fix_terraform.js
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
       - name: 'Commit and push changes'
         working-directory: ${{ env.REPO_NAME }}
         run: |

@@ -60,8 +60,8 @@ jobs:
       DYNATRACE_ENV_URL: ${{ inputs.dynatrace_env_url }}
       DYNATRACE_API_TOKEN: ${{ needs.call_extract_dynatrace_api_token.outputs.api_token }}
       # Dynatrace OAuth2 Client
-      DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
-      DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
+      # DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
+      # DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
       DT_ACCOUNT_ID: ${{ vars.DT_ACCOUNT_ID }}
 
     steps:
