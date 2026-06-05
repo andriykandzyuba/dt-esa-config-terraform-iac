@@ -9,17 +9,7 @@ on:
         type: choice
         options:
           - yhu28601
-          - ual
-          - ualpre
           - hia75022
-          - val72867
-          - vtq72629
-          - avc65257
-          - jqa38275
-          - rwb66447
-          - yyo96051
-          - zpa13569
-          - bwf66177
         default: yhu28601
       format:
         description: "Export format"
