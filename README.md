@@ -1,78 +1,97 @@
-# Dynatrace Configuration as Code (IaC)
+# Dynatrace Export and Import Pipelines
 
-## Purpose
+This document provides a technical overview and usage guide for the Dynatrace Configuration Export and Import (Deployment) pipelines implemented in this repository.
 
-The primary purpose of this project is to provide a robust, scalable, and automated framework for managing Dynatrace configurations across multiple environments. By leveraging **Infrastructure as Code (IaC)** principles, this repository enables:
-- **Consistency**: Ensure identical configuration setups across development, testing, and production environments.
-- **Version Control**: Track changes to Dynatrace settings (dashboards, alerts, etc.) through Git.
-- **Automation**: Reduce manual errors and overhead by using CI/CD pipelines for deployment and export tasks.
-- **Portability**: Facilitate the migration and synchronization of configurations between different Dynatrace tenants.
+## Overview
 
-## Project Structure
+The project supports two primary methods for managing Dynatrace configurations as code:
+1.  **Dynatrace Monaco (Configuration as Code)**: Best for bulk management and environment synchronization.
+2.  **Terraform (Infrastructure as Code)**: Best for granular resource management and stateful deployments.
 
-The project follows an environment-based structure with modular configurations and support for multiple tools:
+Both methods are automated via GitHub Actions and support persistent storage in **Azure Blob Storage** or **GitHub Repositories**.
 
-- `environments/`: Contains environment-specific configurations.
-    - `iac/`: Terraform-based Infrastructure as Code for Dynatrace resources (Dashboards, Alerting, Documents).
-    - `security/`: Management of Dynatrace API tokens.
-    - `export/`: Configuration for exporting existing Dynatrace settings via the Terraform provider CLI.
-    - `monaco/`: Placeholder/target directories for Dynatrace Monaco (Configuration as Code) operations.
-- `modules/`: Reusable Terraform modules (e.g., `dynatrace_api_token`).
-- `.github/workflows/`: GitHub Actions for CI/CD automation.
+---
 
-## Key Functionalities
+## 1. Export Pipeline
 
-### 1. Dynatrace Configuration Management (IaC)
-Automate the creation and maintenance of Dynatrace resources using the [Dynatrace Terraform Provider](https://registry.terraform.io/providers/dynatrace-oss/dynatrace/latest). 
-Resources managed include:
-- Dashboards and Documents
-- Alerting profiles and configurations
+The export pipeline allows you to extract existing configurations from a Dynatrace environment.
 
-### 2. Dynatrace Monaco (Configuration as Code)
-In addition to Terraform, the project supports [Dynatrace Monaco](https://github.com/Dynatrace/dynatrace-configuration-as-code) for:
-- **Bulk Export**: Downloading entire environment configurations into a portable archive.
-- **Multi-Environment Deployment**: Deploying configurations across different accounts and environments using a unified manifest.
-- **Cloud Storage Integration**: Exported configurations are automatically archived and uploaded to Azure Blob Storage for long-term retention.
+### Workflow: `Dynatrace Configuration Export`
+- **File**: `.github/workflows/dynatrace_configuration_export.yaml`
+- **Trigger**: Manual (`workflow_dispatch`)
 
-### 3. API Token Management
-The project handles the lifecycle of Dynatrace API tokens required for automation:
-- **Generate API Token**: Create new tokens with specific scopes and durations.
-- **Extract API Token**: Retrieve token values from the Terraform state for use in other workflows.
-- **Delete API Token**: Revoke tokens when no longer needed.
+#### Inputs:
+- `source_environment`: The Dynatrace environment to export from (e.g., `yhu28601`).
+- `format`: `monaco` or `terraform`.
+- `storage`: `azure-blob` or `github-repo`.
 
-### 4. Dynatrace CLI Export
-Provides the ability to export existing configurations from a Dynatrace environment into Terraform files. This is useful for onboarding existing manual configurations into the IaC pipeline.
+#### Execution Flow:
+1.  **Preparation**: Sets a build timestamp and identifies target folders.
+2.  **Authentication**: Generates a temporary Dynatrace API token.
+3.  **Extraction**:
+  - **Monaco**: Runs `monaco download` and generates a `manifest-projects.yaml`.
+  - **Terraform**: Executes the Dynatrace Terraform Provider in export mode (`-export`) and applies automated fixes via `scripts/terraform/fix_terraform.js`.
+4.  **Post-Processing**: Validates the generated configuration.
+5.  **Storage**: Uploads the resulting configuration to the selected storage backend.
+6.  **Cleanup**: Deletes the temporary API token.
 
-## GitHub Actions Workflows
+---
 
-The following workflows automate common tasks:
+## 2. Import (Deploy) Pipeline
 
-- **Dynatrace Deploy Configurations**: (`dynatrace_alerting.yaml`) Applies Terraform IaC configurations (dashboards, alerts, etc.) to the selected environment.
-- **Dynatrace Terraform Provider CLI Export**: (`dynatrace_export.yaml`) Triggers configuration export from Dynatrace into Terraform files.
-- **Dynatrace Monaco Tool Export**: (`dynatrace_monaco_export.yaml`) Exports environment settings using Monaco and uploads the archive to Azure Blob Storage.
-- **Dynatrace Monaco Tool Deploy**: (`dynatrace_monaco_deploy.yaml`) Deploys configurations from a Monaco archive to a target environment.
-- **Generate API Token**: (`generate_api_token.yaml`) Manually triggered to create or update API tokens.
-- **Extract API Token**: (`extract_api_token.yaml`) A reusable workflow used to fetch the current API token from the Terraform state.
-- **Delete API Token**: (`delete_api_token.yaml`) Removes managed API tokens from the environment.
+The import pipeline deploys configurations from a stored archive to a target Dynatrace environment.
 
-## Getting Started
+### Workflow: `Dynatrace Configuration Deploy`
+- **File**: `.github/workflows/dynatrace_configuration_deploy.yaml`
+- **Trigger**: Manual (`workflow_dispatch`)
 
-### Prerequisites
-- [Terraform](https://www.terraform.io/downloads.html) (version ~1.9)
-- [Dynatrace Monaco Tool](https://github.com/Dynatrace/dynatrace-configuration-as-code/releases) (for local Monaco operations)
-- Access to Dynatrace Environment(s)
-- GitHub repository secrets and variables configured for each environment (e.g., `DYNATRACE_ENV_URL`, `ARM_ACCESS_KEY` for backend state).
+#### Inputs:
+- `source_environment`: The environment where the configuration was originally exported from.
+- `target_environment`: The environment where the configuration will be deployed.
+- `format`: `monaco` or `terraform`.
+- `storage`: `azure-blob` or `github-repo`.
+- `artifact_name`: The specific filename (for Azure) or branch name (for GitHub) containing the configuration.
+- `action`: `dry-run` (validation only) or `deploy` (apply changes).
 
-### Manual Usage (Terraform)
-To work locally, navigate to the desired environment directory:
-```bash
-cd environments/<env>/iac
-terraform init
-terraform plan
-terraform apply
-```
+#### Execution Flow:
+1.  **Retrieval**: Downloads the configuration archive from Azure Blob Storage or checks out the branch from GitHub.
+2.  **Preparation**:
+  - **Monaco**: Replaces URL placeholders in `manifest-projects.yaml` and runs `scripts/monaco/update_config.sh` to skip default dashboards.
+  - **Terraform**: Initializes the Terraform backend and validates the HCL.
+3.  **Deployment**:
+  - **Monaco**: Runs `monaco deploy`.
+  - **Terraform**: Runs `terraform plan` (and `terraform apply` if requested).
+4.  **Cleanup**: Deletes the temporary API token used for deployment.
 
-*Note: In CI/CD, the backend configuration is injected dynamically via GitHub Actions.*
+---
 
-## Environment Management
-Each environment is isolated with its own Terraform state and Monaco configuration, allowing for safe testing before promoting changes to production-like environments.
+## 3. Key Automation Scripts
+
+### `fix_terraform.js`
+Located in `scripts/terraform/`, this Node.js script post-processes Terraform HCL files generated by the export tool. It fixes known schema mismatches or missing required blocks for resources like `dynatrace_network_monitor` and `dynatrace_declarative_grouping`.
+
+### `update_config.sh`
+Located in `scripts/monaco/`, this shell script uses `awk` to modify Monaco configuration files. It specifically targets default Dynatrace dashboards (identified by `com-dynatrace` or `dashboard` templates) and sets `skip: true` to prevent deployment conflicts with read-only system resources.
+
+---
+
+## 4. Usage Guide
+
+### How to synchronize environments:
+1.  **Export**: Run the `Dynatrace Configuration Export` workflow.
+  - Select your **Source Environment**.
+  - Choose **Monaco** for full environment sync.
+  - Choose **Azure Blob** for storage.
+  - Note the `artifact_name` from the workflow logs (usually follows the pattern `monaco-<env>-<timestamp>.zip`).
+2.  **Deploy**: Run the `Dynatrace Configuration Deploy` workflow.
+  - Select the same **Source Environment**.
+  - Select your **Target Environment**.
+  - Set the `artifact_name` from the previous step.
+  - Set `action` to `dry-run` first to verify changes.
+  - If satisfied, run again with `action` set to `deploy`.
+
+---
+
+## 5. Claude AI Skills
+
+Optimized prompt templates are available in the [.claude/skills/](.claude/skills/) directory to help Claude recreate these pipelines and scripts. See [.claude/skills/README.md](.claude/skills/README.md) for more details.
