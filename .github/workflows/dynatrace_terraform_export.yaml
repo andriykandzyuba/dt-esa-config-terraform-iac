@@ -124,6 +124,21 @@ jobs:
         run: terraform validate -no-color
         working-directory: ${{ env.TF_WORKING_DIR }}/configuration/
 
+      - name: 'Override generated Terraform providers configuration'
+        run: |
+          cat <<EOF > ./___providers___.tf
+          terraform {
+            required_providers {
+              dynatrace = {
+                source = "dynatrace-oss/dynatrace"
+                version = "1.96.0"
+              }
+            }
+            backend "azurerm" {}
+          }
+          EOF
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
       - name: 'Upload directory as artifact'
         uses: actions/upload-artifact@v4
         with:
