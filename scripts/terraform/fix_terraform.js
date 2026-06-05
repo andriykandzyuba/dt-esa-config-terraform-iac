@@ -130,13 +130,21 @@ function fixDeclarativeGrouping(content) {
 }
 
 function fixTerraformFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  if (!fs.existsSync(filePath)) {
+    return false;
+  }
 
-  const newContent = fixTerraformContent(content);
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
 
-  if (content !== newContent) {
-    fs.writeFileSync(filePath, newContent);
-    return true;
+    const newContent = fixTerraformContent(content);
+
+    if (content !== newContent) {
+      fs.writeFileSync(filePath, newContent);
+      return true;
+    }
+  } catch (error) {
+    console.error(`Error processing ${filePath}: ${error.message}`);
   }
   return false;
 }
@@ -144,20 +152,15 @@ function fixTerraformFile(filePath) {
 function main() {
   const networkMonitorDir = 'modules/network_monitor';
   let filesFixed = 0;
-  // Try one file first
-  const testFile =
-    'modules/network_monitor/AAPilots_Synthetic_Health_Check_Dev_West.network_monitor.tf';
-  if (fixTerraformFile(testFile)) {
-    console.log(`Fixed ${testFile}`);
-    filesFixed += 1;
-  }
 
   // Process network_monitor
-  for (const filename of fs.readdirSync(networkMonitorDir)) {
-    if (filename.endsWith('.tf') && filename !== path.basename(testFile)) {
-      const filePath = path.join(networkMonitorDir, filename);
-      if (fixTerraformFile(filePath)) {
-        filesFixed += 1;
+  if (fs.existsSync(networkMonitorDir)) {
+    for (const filename of fs.readdirSync(networkMonitorDir)) {
+      if (filename.endsWith('.tf')) {
+        const filePath = path.join(networkMonitorDir, filename);
+        if (fixTerraformFile(filePath)) {
+          filesFixed += 1;
+        }
       }
     }
   }
