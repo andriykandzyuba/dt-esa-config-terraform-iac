@@ -18,6 +18,7 @@ on:
         options:
           - nyw40909
           - peb12847
+          - jlm43294
         default: nyw40909
       format:
         description: "Export format"
@@ -67,7 +68,7 @@ jobs:
       DYNATRACE_ENV_URL: ${{ vars.DYNATRACE_ENV_URL }}
       DT_CLIENT_ID: ${{ secrets.DT_CLIENT_ID }}
       DT_CLIENT_SECRET: ${{ secrets.DT_CLIENT_SECRET }}
-      TARGET_FOLDER: environments/${{ github.event.inputs.source_environment }}/data
+      TARGET_FOLDER: environments/${{ github.event.inputs.target_environment }}/data
       DIR_ARTIFACT_NAME: export-dir-artifact
 
     outputs:
