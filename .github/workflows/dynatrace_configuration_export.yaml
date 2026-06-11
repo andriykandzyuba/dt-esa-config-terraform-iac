@@ -18,7 +18,7 @@ on:
         options:
           - monaco
           - terraform
-        default: monaco
+        default: terraform
       storage:
         description: "Export storage type"
         required: true
@@ -26,7 +26,7 @@ on:
         options:
           - azure-blob
           - github-repo
-        default: azure-blob
+        default: github-repo
 
 concurrency:
   group: export-${{ github.event.inputs.source_environment }}

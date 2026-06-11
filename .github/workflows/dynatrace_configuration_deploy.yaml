@@ -27,7 +27,7 @@ on:
         options:
           - monaco
           - terraform
-        default: monaco
+        default: terraform
       storage:
         description: "Source storage type"
         required: true
@@ -35,7 +35,7 @@ on:
         options:
           - azure-blob
           - github-repo
-        default: azure-blob
+        default: github-repo
       artifact_name:
         description: "Source Configuration File or Github Repo Branch Name"
         required: true
