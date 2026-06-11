@@ -6,7 +6,7 @@ variable "dt_esa_api_token_name" {
 variable "dt_esa_api_token_duration" {
     description = "Dynatrace API Token lifespan in days. The default value is set to 1 hour."
     type = string
-    default = "1h"
+    default = "3d"
 }
 
 variable "dt_esa_api_token_scope" {
