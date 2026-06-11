@@ -47,7 +47,7 @@ jobs:
       environment: ${{ inputs.target_environment }}
 
   dynatrace_deploy_configuration:
-    name: Terraform Export [${{ inputs.target_environment }}]
+    name: Terraform Deploy [${{ inputs.target_environment }}]
     runs-on: ubuntu-latest
     needs: call_extract_dynatrace_api_token
 
