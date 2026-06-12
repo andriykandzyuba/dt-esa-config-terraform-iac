@@ -127,7 +127,7 @@ jobs:
       # --------------------------------------------------------------
       - name: Terraform Apply
         id: apply
-        if: inputs.action == 'deploy' && steps.plan.outcome == 'success'
+        if: inputs.action == 'deploy'
         run: terraform apply -auto-approve
         working-directory: ${{ env.TARGET_FOLDER }}
 
