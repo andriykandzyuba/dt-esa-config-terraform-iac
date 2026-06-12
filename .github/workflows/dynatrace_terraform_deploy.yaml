@@ -116,7 +116,7 @@ jobs:
       # --------------------------------------------------------------
       - name: 'Terraform Plan'
         id: plan
-        if: inputs.action == 'dry-run' || inputs.action == 'deploy'
+        if: inputs.action == 'dry-run'
         run: |
           terraform plan -out=tfplan
         working-directory: ${{ env.TARGET_FOLDER }}
