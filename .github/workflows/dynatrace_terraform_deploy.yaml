@@ -118,7 +118,7 @@ jobs:
         id: plan
         if: inputs.action == 'dry-run' || inputs.action == 'deploy' && steps.validate.outcome == 'success'
         run: |
-          terraform plan out=tfplan.binary
+          terraform plan -out=tfplan.binary
         working-directory: ${{ env.TARGET_FOLDER }}
 
       # --------------------------------------------------------------
