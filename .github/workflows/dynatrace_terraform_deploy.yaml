@@ -128,7 +128,7 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: inputs.action == 'deploy'
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -parallelism=4
         working-directory: ${{ env.TARGET_FOLDER }}
 
   call_delete_dynatrace_api_token:
